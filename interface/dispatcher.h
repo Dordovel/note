@@ -1,16 +1,16 @@
-#ifndef DISPATCHER
-#define DISPATCHER
+#ifndef DISPATCHER_INTERFACE
+#define DISPATCHER_INTERFACE
 
 #include "./event.h"
 
 #include <memory>
 
-class IDispatcher : public IEvent
+class IDispatcher
 {
 	public:
-		virtual void add_event_handle(const std::shared_ptr<IEvent>& handle) noexcept = 0;
+		virtual const std::shared_ptr<IEvent>& handler() noexcept = 0;
 
 		virtual ~IDispatcher() = default;
 };
 
-#endif //DISPATCHER
+#endif //DISPATCHER_INTERFACE

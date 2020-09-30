@@ -1,5 +1,5 @@
-#ifndef CORE
-#define CORE
+#ifndef CORE_INTERFACE
+#define CORE_INTERFACE
 
 #include "./window.h"
 #include "./event.h"
@@ -9,14 +9,10 @@
 class ICore : public IEvent
 {
 	public:
-		virtual void register_window(std::string_view id, std::unique_ptr<IWindow> window) noexcept = 0;
-
-		virtual bool is_active() const noexcept = 0;
-
-		virtual void close() noexcept = 0;
+		virtual void register_window(std::string_view id, IWindow* window) noexcept = 0;
 
 		virtual ~ICore() = default;
 
 };
 
-#endif //CORE
+#endif //CORE_INTERFACE

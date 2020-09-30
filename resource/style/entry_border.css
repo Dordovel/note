@@ -1,0 +1,35 @@
+window
+{
+    background-color: white;
+}
+
+row
+{
+    background-color: white;
+}
+
+entry
+{
+    border: none;
+    color: blue;
+    background-color: white;
+}
+
+button
+{
+    background-color: white;
+    background-image: none;
+}
+
+button:active
+{
+    background-color: lightseagreen;
+    background-image: none;
+}
+
+.noteHeader
+{
+	color: red;
+	font-size: 18px;
+	font-weight: bold;
+}

@@ -1,5 +1,5 @@
-#ifndef WINDOW
-#define WINDOW
+#ifndef WINDOW_INTERFACE
+#define WINDOW_INTERFACE
 
 #include "./dispatcher.h"
 
@@ -12,13 +12,19 @@ struct data;
 class IWindow
 {
 	public:
+
+		virtual void show() = 0;
+		virtual void hide() = 0;
+
 		virtual void set_title(std::string_view title) noexcept = 0;
 		virtual std::string get_title() const noexcept = 0;
 
+		virtual void set_style(std::string_view path) noexcept = 0;
+
+		virtual void set_size(int width, int height) noexcept = 0;
+
 		virtual void set_name(std::string_view name) noexcept = 0;
 		virtual std::string get_name() const noexcept = 0;
-
-		virtual void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept = 0;
 
 		virtual void add_data(std::vector<struct data> data) noexcept = 0;
 		virtual void add_data(struct data) noexcept = 0;
@@ -29,4 +35,4 @@ class IWindow
 
 };
 
-#endif //WINDOW
+#endif //WINDOW_INTERFACE
