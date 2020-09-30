@@ -12,7 +12,7 @@ int main()
 	std::shared_ptr<Dispatcher> dispather = std::make_shared<Dispatcher>();
 	dispather->set_handle(core);
 
-	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file("./test1.glade");
+	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file("./change.glade");
 
 	Window* window = nullptr;
 	builder->get_widget_derived("mainWindow", window);
