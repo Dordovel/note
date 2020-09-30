@@ -8,7 +8,7 @@
 #include <gtkmm-3.0/gtkmm/window.h>
 
 
-class Core : public ICore
+class Core final : public ICore
 {
 	private:
 		std::vector<std::pair<std::string, IWindow*>> _windowList;

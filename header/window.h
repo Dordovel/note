@@ -11,7 +11,7 @@
 #include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 
-class Window : public virtual Gtk::Window, public IWindow
+class Window final : public virtual Gtk::Window, public IWindow
 {
 	private:
 		std::shared_ptr<IDispatcher> _dispatcher;

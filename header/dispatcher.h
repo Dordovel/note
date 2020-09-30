@@ -3,7 +3,7 @@
 
 #include "../interface/dispatcher.h"
 
-class Dispatcher : public IDispatcher
+class Dispatcher final : public IDispatcher
 {
 	private:
 		std::shared_ptr<IEvent> _eventHandler;
