@@ -29,7 +29,19 @@ button:active
 
 .noteHeader
 {
-	color: red;
+	color: green;
 	font-size: 18px;
 	font-weight: bold;
+}
+
+.entryDeactive
+{
+	text-decoration: line-through;
+	color: gray;
+}
+
+.entryActive
+{
+    color: blue;
+	text-decoration: none;
 }

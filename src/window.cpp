@@ -1,4 +1,5 @@
 #include "../header/window.h"
+
 #include "../data.h"
 
 #include <algorithm>
@@ -9,10 +10,22 @@
 #include <gtkmm-3.0/gtkmm/image.h>
 #include <gtkmm-3.0/gtkmm/checkbutton.h>
 
+#include <iostream>
+
 Window::Window(BaseObjectType* cobject,
 	const Glib::RefPtr<Gtk::Builder>& m_refGlade) : Gtk::Window(cobject)
 {
     m_refGlade->get_widget("listBox", this->_listBox);
+	m_refGlade->get_widget("addNewItemButton", this->_addNewItemButton);
+	this->_addNewItemButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_add_new_item));
+
+	m_refGlade->get_widget("saveNoteButton", this->_saveNoteButton);
+	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
+
+	m_refGlade->get_widget("deleteNoteButton", this->_deleteNoteButton);
+	this->_deleteNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_delete_note));
+
+	
     this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
@@ -45,48 +58,7 @@ auto find_widget(const std::vector<Gtk::Widget*>& array, std::string_view id)
 	return std::find_if(std::begin(array), std::end(array), [&id] (auto var){return var->get_name() == id.data();});
 }
 
-void Window::selected_row(Gtk::ListBoxRow* row) noexcept
-{
-    if(!row) return;
-
-	Gtk::Box* box;
-	Gtk::CheckButton* active;
-	Gtk::Entry* text;
-	Gtk::Button* editButton;
-	Gtk::Button* deleteButton;
-
-    std::vector<Gtk::Widget*>  widgets = row->get_children();
-
-    box = dynamic_cast<Gtk::Box*>(widgets.at(0));
-    if(!box) return;
-    widgets = box->get_children();
-
-    auto value = find_widget(widgets, "NotesActive");
-    if(value != std::end(widgets))
-    {
-        active = static_cast<Gtk::CheckButton*>(*value);
-    }
-
-    value = find_widget(widgets, "NotesLabel");
-    if(value != std::end(widgets))
-    {
-        text = static_cast<Gtk::Entry*>(*value);
-    }
-
-    value = find_widget(widgets, "NotesButtonEdit");
-    if(value != std::end(widgets))
-    {
-        editButton = static_cast<Gtk::Button*>(*value);
-    }
-
-    value = find_widget(widgets, "NotesButtonDelete");
-    if(value != std::end(widgets))
-    {
-        deleteButton = static_cast<Gtk::Button*>(*value);
-    }
-}
-
-void Window::show() 
+void Window::show()
 {
     this->_app->add_window(*this);
 	Gtk::Window::on_show();
@@ -123,17 +95,31 @@ void Window::set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexc
 	this->_dispatcher = dispather;
 }
 
-void Window::add_data(std::vector<struct data> value) noexcept
+void Window::button_add_new_item() noexcept
 {
-    for(const auto& var : value)
-        this->add_data(var);
+	Gtk::ListBoxRow* lastRow = this->_listBox->get_row_at_index(this->_listBox->get_children().size() - 1);
+	Gtk::Box* box = dynamic_cast<Gtk::Box*> (lastRow->get_children().at(0));
+
+	if(!box) return;
+
+	this->add_data({box->get_name(), "", true});
+}
+
+void Window::button_save_note() noexcept
+{
+    this->_dispatcher->handler()->event(this->get_name(), EventType::SAVE);
+}
+
+void Window::button_delete_note() noexcept
+{
+    this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE);
 }
 
 void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 {
     if(!row) return;
 
-    std::vector<Gtk::Widget*>  widgets = row->get_children();
+    std::vector<Gtk::Widget*> widgets = row->get_children();
 
     Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
     if(!box) return;
@@ -155,8 +141,6 @@ void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexce
         {
             text->property_editable() = false;
             text->property_can_focus() = false;
-
-            this->_dispatcher->handler()->event(this->get_name(), EventType::CHANGE, box->get_name().data(), text->get_text().data());
         }
     }
 }
@@ -165,12 +149,7 @@ void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noex
 {
     if(!row) return;
 
-    std::vector<Gtk::Widget*>  widgets = row->get_children();
-
-    Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
-
-    if(box)
-        this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE, box->get_name().data());
+	this->_listBox->remove(*row);
 }
 
 void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
@@ -190,11 +169,31 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
     {
         Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*value);
 
-        if(active->get_active())
-            this->_dispatcher->handler()->event(this->get_name(), EventType::DEACTIVATE, box->get_name().data());
-        else
-            this->_dispatcher->handler()->event(this->get_name(), EventType::ACTIVATE, box->get_name().data());
+		auto value = find_widget(widgets, "NotesLabel");
+		if(value != std::end(widgets))
+		{
+			Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
+
+			auto style = text->get_style_context();
+
+			if(active->get_active())
+			{
+				style->remove_class("entryActive");
+				style->add_class("entryDeactive");
+			}
+			else
+			{
+				style->remove_class("entryDeactive");
+				style->add_class("entryActive");
+			}
+		}
     }
+}
+
+void Window::add_data(std::vector<struct data> value) noexcept
+{
+    for(const auto& var : value)
+        this->add_data(var);
 }
 
 void Window::add_data(struct data value) noexcept
@@ -245,11 +244,52 @@ void Window::add_data(struct data value) noexcept
 
     this->_listBox->append(*row);
     this->_listBox->show_all_children();
-    editImage->show();
-    deleteImage->show();
 }
 
 std::vector<struct data> Window::get_data() const noexcept 
 {
-    return {};
+	std::vector<Gtk::Widget*> rows = this->_listBox->get_children();
+
+	std::vector<struct data> list;
+	list.reserve(rows.size());
+
+	struct data buffer;
+
+	Gtk::ListBoxRow* row;
+	std::vector<Gtk::Widget*> elements;
+
+	Gtk::Box* box;
+
+	for(const auto& value : rows)
+	{
+		row = static_cast<Gtk::ListBoxRow*>(value);
+		box = dynamic_cast<Gtk::Box*>(row->get_children().at(0));
+
+		if(!box) continue;
+
+		buffer.index = box->get_name();
+
+		elements = box->get_children();
+
+		auto element = find_widget(elements, "NotesActive");
+		if(element != std::end(elements))
+		{
+			Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*element);
+
+			buffer.status = !active->get_active();
+		}
+
+		element = find_widget(elements, "NotesLabel");
+		if(element != std::end(elements))
+		{
+			Gtk::Entry* text = static_cast<Gtk::Entry*>(*element);
+			
+			buffer.text = text->get_text();
+		}
+
+		list.push_back(buffer);
+
+	}
+	
+    return list;
 }

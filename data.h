@@ -7,7 +7,7 @@ struct data
 {
     std::string index;
     std::string text;
-    int status;
+    bool status;
 };
 
 #endif //DATA_STRUCT

@@ -22,11 +22,16 @@ class Window final : public virtual Gtk::Window, public IWindow
 		Glib::RefPtr<Gdk::Screen> _screen;
 		Glib::RefPtr<Gtk::StyleContext> _styleContext;
         Glib::RefPtr<Gtk::Application> _app;
+		Gtk::Button* _addNewItemButton;
+		Gtk::Button* _saveNoteButton;
+		Gtk::Button* _deleteNoteButton;
 
-        void selected_row(Gtk::ListBoxRow* row) noexcept;
 		void button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
+		void button_add_new_item() noexcept;
+		void button_save_note() noexcept;
+		void button_delete_note() noexcept;
 
 
 	public:
