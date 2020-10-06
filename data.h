@@ -5,7 +5,7 @@
 
 struct data
 {
-    std::string index;
+    int index;
     std::string text;
     bool status;
 };

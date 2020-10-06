@@ -97,23 +97,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry">
-            <property name="name">Header</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="max_length">40</property>
-            <property name="xalign">0.5</property>
-            <style>
-              <class name="noteHeader"/>
-            </style>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkListBox" id="listBox">
             <property name="name">listBox</property>
             <property name="visible">True</property>

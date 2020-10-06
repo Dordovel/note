@@ -97,12 +97,20 @@ void Window::set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexc
 
 void Window::button_add_new_item() noexcept
 {
-	Gtk::ListBoxRow* lastRow = this->_listBox->get_row_at_index(this->_listBox->get_children().size() - 1);
-	Gtk::Box* box = dynamic_cast<Gtk::Box*> (lastRow->get_children().at(0));
+	const auto children = this->_listBox->get_children();
+	int index = 0;
 
-	if(!box) return;
+	if(!children.empty())
+	{
+		Gtk::ListBoxRow* lastRow = this->_listBox->get_row_at_index(children.size() - 1);
+		Gtk::Box* box = dynamic_cast<Gtk::Box*> (lastRow->get_children().at(0));
 
-	this->add_data({box->get_name(), "", true});
+		if(!box) return;
+
+		index = std::stoi(box->get_name()) + 1;
+	}
+
+	this->add_data({index, "", true});
 }
 
 void Window::button_save_note() noexcept
@@ -234,7 +242,7 @@ void Window::add_data(struct data value) noexcept
     buttonDelete->signal_pressed().connect(button_delete_handle);
 
     Gtk::Box* box = Gtk::manage(new Gtk::Box());
-	box->set_name(value.index);
+	box->set_name(std::to_string(value.index));
 	box->pack_start(*check, false, false, 12);
 	box->pack_start(*label, true, true, 10);
 	box->pack_start(*buttonEdit, false, false, 5);
@@ -267,7 +275,7 @@ std::vector<struct data> Window::get_data() const noexcept
 
 		if(!box) continue;
 
-		buffer.index = box->get_name();
+		buffer.index = std::stoi(box->get_name());
 
 		elements = box->get_children();
 

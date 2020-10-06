@@ -21,10 +21,10 @@ int main()
 	window->set_dispatcher(dispather);
 	window->set_style("./resource/style/entry_border.css");
 
-	window->add_data({"1", "Hello", true});
-    window->add_data({"2", "jsdjklfajsdfjkashgfhasklfaskdgfawehfklasdfhkgasdfuihasdjkl", false});
-    window->add_data({"3", "Hello", true});
-    window->add_data({"4", "Hello", true});
+	window->add_data({1, "Hello", true});
+    window->add_data({2, "jsdjklfajsdfjkashgfhasklfaskdgfawehfklasdfhkgasdfuihasdjkl", false});
+    window->add_data({3, "Hello", true});
+    window->add_data({4, "Hello", true});
 
 	core->register_window(window->get_name(), window);
 
