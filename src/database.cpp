@@ -27,7 +27,7 @@ int Database::connect(std::string_view path) noexcept
 	return sqlite3_open(path.data(), &this->db);
 }
 
-int Database::query_insert(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string> data) noexcept 
+int Database::query_insert(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& data) noexcept
 {
 	std::string query(std::string("INSERT INTO ") + table.data());
 
@@ -38,7 +38,7 @@ int Database::query_insert(std::string_view table, const std::vector<std::string
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
 
-int Database::query_update(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string> data, const std::vector<std::string> predicate) noexcept 
+int Database::query_update(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& data, const std::vector<std::string> predicate) noexcept
 {
 	std::string query(std::string("UPDATE ") + table.data());
 
@@ -65,7 +65,7 @@ int Database::query_update(std::string_view table, const std::vector<std::string
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
 
-int Database::query_delete(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string> predicate) noexcept 
+int Database::query_delete(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& predicate) noexcept
 {
 	std::string query(std::string("DELETE FROM ") + table.data());
 
