@@ -13,7 +13,8 @@ enum EventType
 	INSERT,
 	ACTIVATE,
 	DEACTIVATE,
-	SAVE
+	SAVE,
+	UPDATE
 };
 
 class IEvent

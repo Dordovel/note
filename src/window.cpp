@@ -12,6 +12,25 @@
 
 #include <iostream>
 
+namespace
+{
+	void deactivate_entry(Gtk::Entry* entry)
+	{
+		auto style = entry->get_style_context();
+
+		style->remove_class("entryActive");
+		style->add_class("entryDeactive");
+	}
+
+	void activate_entry(Gtk::Entry* entry)
+	{
+		auto style = entry->get_style_context();
+
+		style->remove_class("entryDeactive");
+		style->add_class("entryActive");
+	}
+}
+
 Window::Window(BaseObjectType* cobject,
 	const Glib::RefPtr<Gtk::Builder>& m_refGlade) : Gtk::Window(cobject)
 {
@@ -22,14 +41,16 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("saveNoteButton", this->_saveNoteButton);
 	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
 
-	m_refGlade->get_widget("deleteNoteButton", this->_deleteNoteButton);
-	this->_deleteNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_delete_note));
-
-	
     this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
     Gtk::Window::set_resizable(false);
+	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::update));
+}
+
+void Window::update() noexcept
+{
+	this->_dispatcher->handler()->event(this->get_name(), EventType::UPDATE);
 }
 
 void Window::app(Glib::RefPtr<Gtk::Application> app) noexcept
@@ -97,20 +118,7 @@ void Window::set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexc
 
 void Window::button_add_new_item() noexcept
 {
-	const auto children = this->_listBox->get_children();
-	int index = 0;
-
-	if(!children.empty())
-	{
-		Gtk::ListBoxRow* lastRow = this->_listBox->get_row_at_index(children.size() - 1);
-		Gtk::Box* box = dynamic_cast<Gtk::Box*> (lastRow->get_children().at(0));
-
-		if(!box) return;
-
-		index = std::stoi(box->get_name()) + 1;
-	}
-
-	this->add_data({index, "", true});
+	this->_dispatcher->handler()->event(this->get_name(), EventType::INSERT);
 }
 
 void Window::button_save_note() noexcept
@@ -118,16 +126,13 @@ void Window::button_save_note() noexcept
     this->_dispatcher->handler()->event(this->get_name(), EventType::SAVE);
 }
 
-void Window::button_delete_note() noexcept
-{
-    this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE);
-}
-
 void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 {
     if(!row) return;
 
     std::vector<Gtk::Widget*> widgets = row->get_children();
+	if(widgets.empty())
+		return;
 
     Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
     if(!box) return;
@@ -149,6 +154,8 @@ void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexce
         {
             text->property_editable() = false;
             text->property_can_focus() = false;
+
+			this->_dispatcher->handler()->event(this->get_name(), EventType::CHANGE, box->get_name().data(), text->get_text().data());
         }
     }
 }
@@ -157,7 +164,16 @@ void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noex
 {
     if(!row) return;
 
+    std::vector<Gtk::Widget*> widgets = row->get_children();
+	if(widgets.empty())
+		return;
+
+    Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
+    if(!box) return;
+
 	this->_listBox->remove(*row);
+
+	this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE, box->get_name().data());
 }
 
 void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
@@ -182,29 +198,27 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 		{
 			Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
 
-			auto style = text->get_style_context();
-
 			if(active->get_active())
 			{
-				style->remove_class("entryActive");
-				style->add_class("entryDeactive");
+				deactivate_entry(text);
+				this->_dispatcher->handler()->event(this->get_name(), EventType::DEACTIVATE, box->get_name().data());
 			}
 			else
 			{
-				style->remove_class("entryDeactive");
-				style->add_class("entryActive");
+				activate_entry(text);
+				this->_dispatcher->handler()->event(this->get_name(), EventType::ACTIVATE, box->get_name().data());
 			}
 		}
     }
 }
 
-void Window::add_data(std::vector<struct data> value) noexcept
+void Window::show_data(const std::vector<data>& value) noexcept
 {
     for(const auto& var : value)
-        this->add_data(var);
+        this->show_data(var);
 }
 
-void Window::add_data(struct data value) noexcept
+void Window::show_data(const data& value) noexcept
 {
     Gtk::Image* editImage = Gtk::manage(new Gtk::Image(this->_editIcon));
     Gtk::Image* deleteImage = Gtk::manage(new Gtk::Image(this->_deleteIcon));
@@ -222,6 +236,10 @@ void Window::add_data(struct data value) noexcept
 	label->set_name("NotesLabel");
 	label->property_editable() = false;
 	label->property_can_focus() = false;
+	if(value.status)
+		activate_entry(label);
+	else
+		deactivate_entry(label);
 
     Gtk::Button* buttonEdit = Gtk::manage(new Gtk::Button());
     buttonEdit->set_image_position(Gtk::POS_LEFT);
@@ -252,52 +270,4 @@ void Window::add_data(struct data value) noexcept
 
     this->_listBox->append(*row);
     this->_listBox->show_all_children();
-}
-
-std::vector<struct data> Window::get_data() const noexcept 
-{
-	std::vector<Gtk::Widget*> rows = this->_listBox->get_children();
-
-	std::vector<struct data> list;
-	list.reserve(rows.size());
-
-	struct data buffer;
-
-	Gtk::ListBoxRow* row;
-	std::vector<Gtk::Widget*> elements;
-
-	Gtk::Box* box;
-
-	for(const auto& value : rows)
-	{
-		row = static_cast<Gtk::ListBoxRow*>(value);
-		box = dynamic_cast<Gtk::Box*>(row->get_children().at(0));
-
-		if(!box) continue;
-
-		buffer.index = std::stoi(box->get_name());
-
-		elements = box->get_children();
-
-		auto element = find_widget(elements, "NotesActive");
-		if(element != std::end(elements))
-		{
-			Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*element);
-
-			buffer.status = !active->get_active();
-		}
-
-		element = find_widget(elements, "NotesLabel");
-		if(element != std::end(elements))
-		{
-			Gtk::Entry* text = static_cast<Gtk::Entry*>(*element);
-			
-			buffer.text = text->get_text();
-		}
-
-		list.push_back(buffer);
-
-	}
-	
-    return list;
 }

@@ -1,8 +1,15 @@
 #include "../header/core.h"
-#include "../data.h"
 
 #include <iostream>
 
+Core::Core()
+{
+	this->_data.emplace_back(Core::_status_::INSERT, data{1, "1", true});
+	this->_data.emplace_back(Core::_status_::INSERT, data{2, "2", true});
+	this->_data.emplace_back(Core::_status_::INSERT, data{3, "3", false});
+	this->_data.emplace_back(Core::_status_::INSERT, data{4, "4", true});
+	this->_data.emplace_back(Core::_status_::INSERT, data{5, "5", false});
+}
 
 void Core::register_window(std::string_view id, IWindow* window) noexcept 
 {
@@ -11,14 +18,36 @@ void Core::register_window(std::string_view id, IWindow* window) noexcept
 
 int Core::event(std::string_view id, EventType type, std::string_view value) noexcept
 {
+	int index = std::stoi(value.data());
+	auto row = std::find_if(std::begin(this->_data), std::end(this->_data), [index](auto value)
+				{return value.var.index == index;});
+	if(row == std::end(this->_data))
+		return -1;
+
     switch(type)
     {
         case EventType::ACTIVATE:
-                std::cout<<"Core Event: Toggle Activate\n";
+			{
+				if(!row->var.status)
+				{
+					row->status = Core::_status_::CHANGE;
+					row->var.status = true;
+				}
+			}
             break;
         case EventType::DEACTIVATE:
-                std::cout<<"Core Event: Toggle Deactivate\n";
+			{
+				if(row->var.status)
+				{
+					row->status = Core::_status_::CHANGE;
+					row->var.status = false;
+				}
+			}
             break;
+		case EventType::DELETE:
+				row->status = Core::_status_::DELETE;
+			break;
+
         default:
             break;
     }
@@ -27,20 +56,39 @@ int Core::event(std::string_view id, EventType type, std::string_view value) noe
 
 int Core::event(std::string_view id, EventType type) noexcept 
 {
+	auto window = std::find_if(std::begin(this->_windowList), std::end(this->_windowList), [id] (auto value)
+			{return value.first == id;});
+
 	switch(type)
 	{
 		case EventType::SAVE:
 			{
-				auto window = std::find_if(std::begin(this->_windowList), std::end(this->_windowList), 
-						[id=id](auto val){return val.first == id;});
-
+				for(const auto& val : this->_data)
+				{
+					std::cout<<"Value: "<<val.var.index<<" "<<val.var.text<<std::endl;
+				}
+			}
+			break;
+		case EventType::UPDATE:
+			{
 				if(window != std::end(this->_windowList))
 				{
-					std::vector<struct data> data = (*window).second->get_data();
-					for(const auto& val : data)
+					for(const auto& val : this->_data)
 					{
-						std::cout<<val.text<<std::endl;
+						window->second->show_data(val.var);
 					}
+				}
+			}
+			break;
+		case EventType::INSERT:
+			{
+				if(window != std::end(this->_windowList))
+				{
+					const std::size_t size = this->_data.size();
+					int index = (this->_data.at(size - 1).var.index + 1);
+					Core::_data_ val = this->_data.emplace_back(Core::_status_::INSERT, data{index, "", false});
+					
+					window->second->show_data(val.var);
 				}
 			}
 			break;
@@ -57,7 +105,21 @@ int Core::event(std::string_view id, EventType type, std::string_view value, std
     switch(type)
     {
         case EventType::CHANGE:
-            std::cout<<"Core Event: Changed {Id: "<<value<<" Change value: "<<value1<<"}\n";
+			{
+				int index = std::stoi(value.data());
+
+				auto row = std::find_if(std::begin(this->_data), std::end(this->_data), [index](auto value)
+						{return value.var.index == index;});
+
+				if(row != std::end(this->_data))
+				{
+					if(row->var.text != value1)
+					{
+						row->status = Core::_status_::CHANGE;
+						row->var.text = value1;
+					}
+				}
+			}
         default:
             break;
     }

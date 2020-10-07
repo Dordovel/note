@@ -24,14 +24,14 @@ class Window final : public virtual Gtk::Window, public IWindow
         Glib::RefPtr<Gtk::Application> _app;
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
-		Gtk::Button* _deleteNoteButton;
 
 		void button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
 		void button_add_new_item() noexcept;
 		void button_save_note() noexcept;
-		void button_delete_note() noexcept;
+
+		void update() noexcept;
 
 
 	public:
@@ -51,10 +51,8 @@ class Window final : public virtual Gtk::Window, public IWindow
 
 		void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept;
 
-		void add_data(std::vector<struct data> data) noexcept override;
-		void add_data(struct data) noexcept override;
-
-		std::vector<struct data> get_data() const noexcept override;
+		void show_data(const std::vector<data>& data) noexcept override;
+		void show_data(const data& value) noexcept override;
 
         void set_style(std::string_view path) noexcept override;
 
