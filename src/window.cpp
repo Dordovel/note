@@ -53,8 +53,8 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("saveNoteButton", this->_saveNoteButton);
 	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
 
-    this->_editIcon = Gdk::Pixbuf::create_from_file("../resource/image/16px/edit-button.png");
-    this->_deleteIcon = Gdk::Pixbuf::create_from_file("../resource/image/16px/remove-file.png");
+    this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
+    this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));

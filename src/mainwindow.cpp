@@ -9,7 +9,7 @@
 MainWindow::MainWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade):Window(cobject, m_refGlade)
 {
-    this->_openIcon = Gdk::Pixbuf::create_from_file("../resource/image/16px/settings-button.png");
+    this->_openIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/settings-button.png");
 }
 
 Gtk::Grid* MainWindow::create_tool_buttons(Gtk::ListBoxRow* row)
