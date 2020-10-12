@@ -53,13 +53,33 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("saveNoteButton", this->_saveNoteButton);
 	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
 
-    this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
-    this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
+    this->_editIcon = Gdk::Pixbuf::create_from_file("../resource/image/16px/edit-button.png");
+    this->_deleteIcon = Gdk::Pixbuf::create_from_file("../resource/image/16px/remove-file.png");
 
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
 
 	Gtk::Window::signal_hide().connect(sigc::mem_fun(this, &Window::signal_hide));
+}
+
+void Window::set_sub_window(std::string_view id) noexcept
+{
+	this->_subWindow = id;
+}
+
+std::string Window::get_sub_window() noexcept
+{
+	return this->_subWindow;
+}
+
+std::string Window::get_parent() noexcept
+{
+	return this->_parentWindow;
+}
+
+void Window::set_parent(std::string_view id) noexcept
+{
+	this->_parentWindow = id;
 }
 
 void Window::signal_show() noexcept
@@ -189,9 +209,9 @@ void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noex
 {
     if(!row) return;
 
-	remove_row(this->_listBox, row);
-
 	this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE, row->get_index());
+
+	remove_row(this->_listBox, row);
 }
 
 void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept

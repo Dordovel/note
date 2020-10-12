@@ -24,24 +24,42 @@ class Core final : public ICore
 		struct _data_
 		{
 			_status_ status;
+
 			struct Data var;
 
-			_data_(_status_ status, const Data& var): status(status), var(var){}
-			_data_():status(_status_::INSERT), var(){}
+			_data_(_status_ status, const Data& var): status(status),
+														var(var){}
+
+			_data_(_status_ status, std::size_t parent, const Data& var):status(status),
+																		var(var){}
+			_data_():status(_status_::INSERT){}
 
 			~_data_() = default;
 		};
 
-		std::vector<Core::_data_> load_data(std::string_view table, std::vector<std::string> predicate) noexcept;
+		struct _buffer_
+		{
+			std::string windowId;
+			std::string parentId;
+			std::string childrenId;
+			std::string handler;
 
-		std::vector<_data_>* init_buffer(std::string_view id) noexcept;
-		Core::_data_ create_default_element() noexcept;
+			bool subClass;
+			bool parentClass;
+			
+			std::vector<_data_> bufferData;
+		};
 
-		void save_buffer(std::string_view table, const std::vector<_data_>& buffer) noexcept;
+		_buffer_* create_default_buffer(std::string_view id) noexcept;
+		_buffer_* create_sub_buffer(std::string_view parent, std::string_view id, std::string_view handler) noexcept;
+
+		Core::_data_& create_default_element() noexcept;
+
+		void save_buffer(_buffer_& buffer) noexcept;
 
 		std::vector<std::pair<std::string, IWindow*>> _windowList;
-		std::vector<_data_>* _pBuffer;
-        std::vector<std::vector<_data_>> _buffers;
+		_buffer_* _pBuffer;
+        std::vector<_buffer_> _buffers;
 		std::shared_ptr<IDatabase> _database;
 
 	public:

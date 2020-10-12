@@ -30,6 +30,9 @@ class Window : public Gtk::Window, public IWindow
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
 
+		std::string _subWindow;
+		std::string _parentWindow;
+
         void signal_show() noexcept;
         void signal_hide() noexcept;
 		void window_hide() noexcept;
@@ -71,6 +74,12 @@ class Window : public Gtk::Window, public IWindow
         void set_style(std::string_view path) noexcept override;
 
         void set_size(int width = -1, int height = -1) noexcept override;
+
+		void set_sub_window(std::string_view id) noexcept override;
+		std::string get_sub_window() noexcept override;
+
+		std::string get_parent() noexcept override;
+		void set_parent(std::string_view id) noexcept override;
 
         virtual ~Window() = default;
 

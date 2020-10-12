@@ -11,7 +11,7 @@ int main()
 {
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("Test");
 	std::shared_ptr<IDatabase> database = std::make_shared<Database>();
-	database->connect("./resource/db/note.db");
+	database->connect("../resource/db/note.db");
 
 	std::shared_ptr<Core> core = std::make_shared<Core>(database);
 
@@ -20,23 +20,25 @@ int main()
 
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
-	MainWindow* main = nullptr;
-	builder->add_from_file("./change.glade");
-	builder->get_widget_derived("mainWindow", main);
-	main->set_size(400);
-	main->set_name("main");
-	main->set_dispatcher(dispather);
-	main->set_style("./resource/style/entry_border.css");
-    main->app(app);
-
 	Window* edit = nullptr;
-    builder->add_from_file("./change.glade");
+    builder->add_from_file("../change.glade");
     builder->get_widget_derived("mainWindow", edit);
 	edit->set_size(400);
 	edit->set_name("edit");
 	edit->set_dispatcher(dispather);
-	edit->set_style("./resource/style/entry_border.css");
+	edit->set_style("../resource/style/entry_border.css");
 	edit->app(app);
+
+	MainWindow* main = nullptr;
+	builder->add_from_file("../change.glade");
+	builder->get_widget_derived("mainWindow", main);
+	main->set_size(400);
+	main->set_name("main");
+	main->set_dispatcher(dispather);
+	main->set_style("../resource/style/entry_border.css");
+    main->app(app);
+	main->set_sub_window(edit->get_name());
+
 
 	core->register_window(main->get_name(), main);
 	core->register_window(edit->get_name(), edit);

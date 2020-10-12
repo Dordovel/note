@@ -30,6 +30,12 @@ class IWindow
 
 		virtual void show_data(const struct Data& value) noexcept = 0;
 
+		virtual void set_sub_window(std::string_view id) noexcept = 0;
+		virtual std::string get_sub_window() noexcept = 0;
+		
+		virtual std::string get_parent() noexcept = 0;
+		virtual void set_parent(std::string_view id) noexcept = 0;
+
 		virtual ~IWindow() = default;
 
 };

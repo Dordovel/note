@@ -35,6 +35,7 @@ int Database::query_insert(std::string_view table, const std::vector<std::string
 
 	query += " VALUES ('" + concat(data, "', '") + "')";
 
+	std::cout<<"INSERT: "<<query<<std::endl;
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
 
@@ -52,7 +53,7 @@ int Database::query_update(std::string_view table, const std::vector<std::string
 
 	for(std::size_t a = 0; a < size; ++a)
 	{
-		buffer.emplace_back(columns.at(a) + " = " + data.at(a));
+		buffer.emplace_back(columns.at(a) + " = '" + data.at(a) + "'");
 	}
 
 	query += " SET " + concat(buffer);
@@ -61,6 +62,8 @@ int Database::query_update(std::string_view table, const std::vector<std::string
 	{
 		query += " WHERE " + concat(predicate, " AND ");
 	}
+
+	std::cout<<"UPDATE: "<<query<<std::endl;
 
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
@@ -74,7 +77,7 @@ int Database::query_delete(std::string_view table, const std::vector<std::string
 		query += " WHERE " + concat(predicate, " AND ");
 	}
 
-	std::cout<<query<<std::endl;
+	std::cout<<"DELETE: "<<query<<std::endl;
 
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
@@ -94,6 +97,8 @@ std::vector<std::vector<std::string>> Database::query_select(std::string_view ta
 	{
 		query += " WHERE " + concat(predicate, " AND ");
 	}
+
+	std::cout<<"SELECT: "<<query<<std::endl;
 
 	sqlite3_stmt* stmt;
 	sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
