@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-struct data;
+struct Data;
 
 class IWindow
 {
@@ -15,6 +15,8 @@ class IWindow
 
 		virtual void show() = 0;
 		virtual void hide() = 0;
+
+		virtual void modal(bool flag) noexcept = 0;
 
 		virtual void set_title(std::string_view title) noexcept = 0;
 		virtual std::string get_title() const noexcept = 0;
@@ -26,8 +28,7 @@ class IWindow
 		virtual void set_name(std::string_view name) noexcept = 0;
 		virtual std::string get_name() const noexcept = 0;
 
-		virtual void show_data(const std::vector<struct data>& data) noexcept = 0;
-		virtual void show_data(const struct data& value) noexcept = 0;
+		virtual void show_data(const struct Data& value) noexcept = 0;
 
 		virtual ~IWindow() = default;
 

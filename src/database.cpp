@@ -5,7 +5,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <algorithm>
-
+#include <iostream>
 
 namespace
 {
@@ -65,7 +65,7 @@ int Database::query_update(std::string_view table, const std::vector<std::string
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
 
-int Database::query_delete(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& predicate) noexcept
+int Database::query_delete(std::string_view table, const std::vector<std::string>& predicate) noexcept
 {
 	std::string query(std::string("DELETE FROM ") + table.data());
 
@@ -73,6 +73,8 @@ int Database::query_delete(std::string_view table, const std::vector<std::string
 	{
 		query += " WHERE " + concat(predicate, " AND ");
 	}
+
+	std::cout<<query<<std::endl;
 
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }

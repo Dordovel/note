@@ -3,14 +3,15 @@
 
 #include <string>
 
-struct data
+struct Data
 {
     int index;
     std::string text;
     bool status;
 
-	data() = default;
-	data(int id, std::string text, bool status): index(id), text(text), status(status){}
+	Data():index(0), text(""), status(false){};
+	Data(int id, std::string text, bool status): index(id), text(text), status(status){}
+	~Data() = default;
 };
 
 #endif //DATA_STRUCT

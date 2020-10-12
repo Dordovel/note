@@ -1,47 +1,51 @@
 #include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
 #include "./header/window.h"
+#include "./header/mainwindow.h"
 #include "./header/core.h"
 #include "./header/dispatcher.h"
-#include "./data.h"
 
 #include "./header/database.h"
 
 int main()
 {
     Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("Test");
-	std::shared_ptr<Core> core = std::make_shared<Core>();
+	std::shared_ptr<IDatabase> database = std::make_shared<Database>();
+	database->connect("./resource/db/note.db");
+
+	std::shared_ptr<Core> core = std::make_shared<Core>(database);
 
 	std::shared_ptr<Dispatcher> dispather = std::make_shared<Dispatcher>();
 	dispather->set_handle(core);
 
-	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create_from_file("./change.glade");
+	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
-	Window* window = nullptr;
-	builder->get_widget_derived("mainWindow", window);
-	window->set_size(400);
-	window->set_name("Edit");
-	window->set_dispatcher(dispather);
-	window->set_style("./resource/style/entry_border.css");
+	MainWindow* main = nullptr;
+	builder->add_from_file("./change.glade");
+	builder->get_widget_derived("mainWindow", main);
+	main->set_size(400);
+	main->set_name("main");
+	main->set_dispatcher(dispather);
+	main->set_style("./resource/style/entry_border.css");
+    main->app(app);
 
-	core->register_window(window->get_name(), window);
+	Window* edit = nullptr;
+    builder->add_from_file("./change.glade");
+    builder->get_widget_derived("mainWindow", edit);
+	edit->set_size(400);
+	edit->set_name("edit");
+	edit->set_dispatcher(dispather);
+	edit->set_style("./resource/style/entry_border.css");
+	edit->app(app);
 
-	Database database;
-	database.connect("./resource/db/note.db");
-	//database.query_insert("edit", {"parent_id", "data", "status", "deleted"}, {"1", "Test Value", "0", "0"});
-    auto data = database.query_select("edit", {"parent_id", "data", "status", "deleted"}, {"id = 0"});
+	core->register_window(main->get_name(), main);
+	core->register_window(edit->get_name(), edit);
 
-    for(const auto& row : data)
-    {
-        for(const auto& colums : row)
-        {
-            std::cout<<colums<<std::endl;
-        }
-    }
 
-	app->run(*window);
+	app->run(*main);
 
-	delete window;
+	delete main;
+	delete edit;
 
 	return 0;
 }

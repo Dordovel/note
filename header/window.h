@@ -1,5 +1,5 @@
-#ifndef MAIN_WINDOW
-#define MAIN_WINDOW
+#ifndef WINDOW
+#define WINDOW
 
 #include "../interface/window.h"
 
@@ -11,7 +11,12 @@
 #include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 
-class Window final : public virtual Gtk::Window, public IWindow
+namespace Gtk
+{
+    class Grid;
+};
+
+class Window : public Gtk::Window, public IWindow
 {
 	private:
 		std::shared_ptr<IDispatcher> _dispatcher;
@@ -25,13 +30,21 @@ class Window final : public virtual Gtk::Window, public IWindow
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
 
+        void signal_show() noexcept;
+        void signal_hide() noexcept;
+		void window_hide() noexcept;
+
 		void button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
 		void button_add_new_item() noexcept;
 		void button_save_note() noexcept;
 
-		void update() noexcept;
+		Gtk::ListBoxRow* create_new_row(const Data& value) noexcept;
+
+
+    protected:
+        virtual class Gtk::Grid* create_tool_buttons(Gtk::ListBoxRow* row);
 
 
 	public:
@@ -41,6 +54,8 @@ class Window final : public virtual Gtk::Window, public IWindow
 		void show() override;
 		void hide() override;
 
+		void modal(bool flag) noexcept override;
+
 		void app(Glib::RefPtr<Gtk::Application> app) noexcept;
 
 		void set_title(std::string_view title) noexcept override;
@@ -49,17 +64,16 @@ class Window final : public virtual Gtk::Window, public IWindow
 		void set_name(std::string_view name) noexcept override;
 		std::string get_name() const noexcept override;
 
-		void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept;
+        virtual void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept;
 
-		void show_data(const std::vector<data>& data) noexcept override;
-		void show_data(const data& value) noexcept override;
+		void show_data(const Data& value) noexcept override;
 
         void set_style(std::string_view path) noexcept override;
 
         void set_size(int width = -1, int height = -1) noexcept override;
 
-        ~Window() = default;
+        virtual ~Window() = default;
 
 };
 
-#endif //MAIN_WINDOW
+#endif //WINDOW
