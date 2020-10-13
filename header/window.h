@@ -2,6 +2,7 @@
 #define WINDOW
 
 #include "../interface/window.h"
+#include "./dispatcher.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <gtkmm-3.0/gtkmm/listbox.h>
@@ -31,11 +32,9 @@ class Window : public Gtk::Window, public IWindow
 		Gtk::Button* _saveNoteButton;
 
 		std::string _subWindow;
-		std::string _parentWindow;
 
         void signal_show() noexcept;
-        void signal_hide() noexcept;
-		void window_hide() noexcept;
+        bool signal_hide(GdkEventAny* event) noexcept;
 
 		void button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
         void button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
@@ -77,9 +76,6 @@ class Window : public Gtk::Window, public IWindow
 
 		void set_sub_window(std::string_view id) noexcept override;
 		std::string get_sub_window() noexcept override;
-
-		std::string get_parent() noexcept override;
-		void set_parent(std::string_view id) noexcept override;
 
         virtual ~Window() = default;
 

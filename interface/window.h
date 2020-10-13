@@ -1,7 +1,6 @@
 #ifndef WINDOW_INTERFACE
 #define WINDOW_INTERFACE
 
-#include "./dispatcher.h"
 
 #include <string>
 #include <string_view>
@@ -33,9 +32,6 @@ class IWindow
 		virtual void set_sub_window(std::string_view id) noexcept = 0;
 		virtual std::string get_sub_window() noexcept = 0;
 		
-		virtual std::string get_parent() noexcept = 0;
-		virtual void set_parent(std::string_view id) noexcept = 0;
-
 		virtual ~IWindow() = default;
 
 };

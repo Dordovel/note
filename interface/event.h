@@ -15,7 +15,8 @@ enum EventType
 	ACTIVATE,
 	DEACTIVATE,
 	SAVE,
-	UPDATE
+	UPDATE,
+	CHANGE_LIST
 };
 
 class IEvent

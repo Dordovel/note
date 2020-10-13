@@ -276,6 +276,18 @@ int Core::event(std::string_view id, EventType type) noexcept
 			}
 		break;
 
+		case EventType::CHANGE_LIST:
+			{
+				int changes = 0;
+				auto begin = std::begin(this->_pBuffer->bufferData);
+				auto end = std::end(this->_pBuffer->bufferData);
+
+				std::for_each(begin, end, [&changes](auto a){if (a.status != Core::_status_::NONE) ++changes;});
+
+				return changes;
+			}
+		break;
+
 		default: break;
 	}
 

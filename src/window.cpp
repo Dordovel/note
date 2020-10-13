@@ -10,6 +10,8 @@
 #include <gtkmm-3.0/gtkmm/image.h>
 #include <gtkmm-3.0/gtkmm/checkbutton.h>
 #include <gtkmm-3.0/gtkmm/grid.h>
+#include <gtkmm-3.0/gtkmm/dialog.h>
+
 #include <iostream>
 
 namespace
@@ -59,7 +61,7 @@ Window::Window(BaseObjectType* cobject,
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
 
-	Gtk::Window::signal_hide().connect(sigc::mem_fun(this, &Window::signal_hide));
+	Gtk::Window::signal_delete_event().connect(sigc::mem_fun(this, &Window::signal_hide));
 }
 
 void Window::set_sub_window(std::string_view id) noexcept
@@ -72,25 +74,49 @@ std::string Window::get_sub_window() noexcept
 	return this->_subWindow;
 }
 
-std::string Window::get_parent() noexcept
-{
-	return this->_parentWindow;
-}
-
-void Window::set_parent(std::string_view id) noexcept
-{
-	this->_parentWindow = id;
-}
-
 void Window::signal_show() noexcept
 {
 	this->_dispatcher->handler()->event(this->get_name(), EventType::SHOW);
 }
 
-void Window::signal_hide() noexcept
+bool Window::signal_hide(GdkEventAny* event) noexcept
 {
-    this->_dispatcher->handler()->event(this->get_name(), EventType::HIDE);
-    clear_list(this->_listBox);
+	int changes = this->_dispatcher->handler()->event(this->get_name(), EventType::CHANGE_LIST);
+
+	if(changes > 0)
+	{
+		Gtk::Dialog dialog;
+		Gtk::Label label(std::to_string(changes) + " Unsaved changes");
+		label.override_color(Gdk::RGBA("rgba(255, 0 , 0, 1)"));
+		dialog.get_vbox()->pack_start(label);
+		dialog.add_button("Save", 0);
+		dialog.add_button("Don't save", 1);
+		dialog.add_button("Cancel", 2);
+		dialog.show_all();
+
+		switch(dialog.run())
+		{
+			case 0:
+				this->_dispatcher->handler()->event(this->get_name(), EventType::SAVE);
+			break;
+
+			case 1:
+				{
+					this->_dispatcher->handler()->event(this->get_name(), EventType::HIDE);
+					clear_list(this->_listBox);
+				}
+			break;
+
+			case 2:
+				{
+					dialog.hide();
+					return true;
+				}
+			break;
+		}
+	}
+
+	return false;
 }
 
 void Window::app(Glib::RefPtr<Gtk::Application> app) noexcept
