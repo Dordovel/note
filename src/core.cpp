@@ -114,35 +114,35 @@ void Core::save_buffer(Core::_buffer_& buffer) noexcept
 		switch(row.status)
 		{
 			case _status_::DELETE:
+			{
+				if(buffer.subClass)
 				{
-					if(buffer.subClass)
+					this->_database->query_update(buffer.windowId,
+							{"deleted"},
+							{"1"},
+							{"parent_id = " + buffer.handler});
+				}
+				else
+				{
+					this->_database->query_update(buffer.windowId,
+							{"deleted"},
+							{"1"},
+							{"id = " + std::to_string(row.var.index)});
+
+					if(buffer.parentClass)
 					{
-						this->_database->query_update(buffer.windowId,
+						this->_database->query_update(buffer.childrenId,
 								{"deleted"},
 								{"1"},
 								{"parent_id = " + buffer.handler});
 					}
-					else
-					{
-						this->_database->query_update(buffer.windowId,
-								{"deleted"},
-								{"1"},
-								{"id = " + std::to_string(row.var.index)});
-
-						if(buffer.parentClass)
-						{
-							this->_database->query_update(buffer.childrenId,
-									{"deleted"},
-									{"1"},
-									{"parent_id = " + buffer.handler});
-						}
-						
-					}
-
+					
 				}
+
+			}
 			break;
 
-			case _status_::INSERT:
+			case _status_::EMPTY:
 				{
 					if(buffer.subClass)
 					{
@@ -156,26 +156,34 @@ void Core::save_buffer(Core::_buffer_& buffer) noexcept
 								{"data", "status"},
 								{row.var.text, std::to_string(row.var.status)});
 					}
-			break;
-
-			case Core::_status_::CHANGE:
-				{
-					this->_database->query_update(buffer.windowId,
-							{"data", "status"},
-							{row.var.text, std::to_string(row.var.status)},
-							{"id = " + std::to_string(row.var.index)});
 				}
 			break;
 
-			default:
-				std::cout<<"DEFAULT: "<<row.status<<std::endl;
+			case Core::_status_::CHANGE:
+			{
+				this->_database->query_update(buffer.windowId,
+						{"data", "status"},
+						{row.var.text, std::to_string(row.var.status)},
+						{"id = " + std::to_string(row.var.index)});
+			}
 			break;
+
+			default: break;
 		}
 
+		row.status = Core::_status_::NONE;
+
 	}
 
-	row.status = Core::_status_::NONE;
-	}
+}
+
+bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
+{
+	auto begin = buffer.bufferData.begin();
+	auto end = buffer.bufferData.end();
+	int changes = std::count_if(begin, end, [](auto&& val){return val.status != Core::_status_::NONE;});
+	
+	return 0 == changes;
 }
 
 void Core::register_window(std::string_view id, IWindow* window) noexcept 
@@ -183,9 +191,9 @@ void Core::register_window(std::string_view id, IWindow* window) noexcept
     this->_windowList.emplace_back(id, window);
 }
 
-int Core::event(std::string_view id, EventType type, std::size_t index) noexcept
+void Core::event(std::string_view id, EventType type, std::size_t index) noexcept
 {
-	if(index >= this->_pBuffer->bufferData.size()) return -1;
+	if(index >= this->_pBuffer->bufferData.size()) return;
 
     _data_& row = this->_pBuffer->bufferData.at(index);
 
@@ -195,9 +203,7 @@ int Core::event(std::string_view id, EventType type, std::size_t index) noexcept
 			{
 				if(!row.var.status)
 				{
-					if(row.status != Core::_status_::INSERT)
-						row.status = Core::_status_::CHANGE;
-
+					row.status = Core::_status_::CHANGE;
 					row.var.status = true;
 				}
 			}
@@ -207,9 +213,7 @@ int Core::event(std::string_view id, EventType type, std::size_t index) noexcept
 			{
 				if(row.var.status)
 				{
-					if(row.status != Core::_status_::INSERT)
-						row.status = Core::_status_::CHANGE;
-
+					row.status = Core::_status_::CHANGE;
 					row.var.status = false;
 				}
 			}
@@ -220,18 +224,21 @@ int Core::event(std::string_view id, EventType type, std::size_t index) noexcept
 				if(row.status == Core::_status_::DELETE)
 					this->event(id, type, index + 1);
 
-				row.status = Core::_status_::DELETE;
-			}
-		break;
+				if (row.status == Core::_status_::EMPTY)
+					row.status = Core::_status_::NONE;
+				else
+				  row.status = Core::_status_::DELETE;
+            }
+			break;
 
         default: break;
     }
-    return 0;
 }
 
-int Core::event(std::string_view id, EventType type) noexcept 
+void Core::event(std::string_view id, EventType type) noexcept 
 {
 	auto window = get_element(this->_windowList, id);
+	if(window == std::end(this->_windowList)) return;
 
 	switch(type)
 	{
@@ -243,6 +250,12 @@ int Core::event(std::string_view id, EventType type) noexcept
 
         case EventType::HIDE:
 			{
+				if(!this->buffer_empty(*this->_pBuffer))
+				{
+					window->second->set_status_message("Changes not saved");
+					break;
+				}
+
 				if(this->_pBuffer)
 					this->_buffers.erase(std::prev(std::end(this->_buffers)));
 
@@ -251,6 +264,9 @@ int Core::event(std::string_view id, EventType type) noexcept
 
 				this->_pBuffer->childrenId.clear();
 				this->_pBuffer->parentClass = false;
+
+				window->second->hide();
+
 			}
 		break;
 
@@ -259,78 +275,65 @@ int Core::event(std::string_view id, EventType type) noexcept
 				if(!this->_pBuffer)
 					if(this->_pBuffer = this->create_default_buffer(id); !this->_pBuffer) break;
 
-				if(window != std::end(this->_windowList))
-					for(const auto& val : this->_pBuffer->bufferData)
-						window->second->show_data(val.var);
+				for(const auto& val : this->_pBuffer->bufferData)
+					window->second->show_data(val.var);
 			}
 		break;
 
 		case EventType::INSERT:
 			{
-				if(window != std::end(this->_windowList))
-				{
-					Core::_data_ val = this->create_default_element();
-					
-					window->second->show_data(val.var);
-				}
-			}
-		break;
-
-		case EventType::CHANGE_LIST:
-			{
-				int changes = 0;
-				auto begin = std::begin(this->_pBuffer->bufferData);
-				auto end = std::end(this->_pBuffer->bufferData);
-
-				std::for_each(begin, end, [&changes](auto a){if (a.status != Core::_status_::NONE) ++changes;});
-
-				return changes;
+				Core::_data_ val = this->create_default_element();
+				window->second->show_data(val.var);
 			}
 		break;
 
 		default: break;
 	}
 
-    return 0;
 }
 
-int Core::event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept
+void Core::event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept
 {
+	if(value.empty()) return;
+
     switch(type)
     {
         case EventType::CHANGE:
-			{
-			    Core::_data_& row = this->_pBuffer->bufferData.at(index);
+		{
+			Core::_data_& row = this->_pBuffer->bufferData.at(index);
 
-                if(row.var.text != value)
-				{
-                    row.var.text = value;
+			if(row.status != Core::_status_::EMPTY)
+				row.status = Core::_status_::CHANGE;
 
-					if(row.status != Core::_status_::INSERT)
-						row.status = Core::_status_::CHANGE;
-				}
-			}
+			row.var.text = value;
+		}
 		break;
 
 		case EventType::OPEN:
-				{
-					auto window = get_element(this->_windowList, value);
-					if(window != std::end(this->_windowList))
-                    {
-						window->second->modal(true);
-						window->second->set_title(this->_pBuffer->bufferData.at(index).var.text);
+		{
+			if(!this->buffer_empty(*this->_pBuffer))
+			{
+				auto parent = get_element(this->_windowList, id);
+				if(parent == std::end(this->_windowList)) break;
+				parent->second->set_status_message("Changes not saved");
+				break;
+			}
 
-						this->_pBuffer->childrenId = value;
-						this->_pBuffer->parentClass = true;
-						this->_pBuffer = this->create_sub_buffer(id, value,
-														std::to_string(this->_pBuffer->bufferData.at(index).var.index));
+			auto window = get_element(this->_windowList, value);
+			if(window == std::end(this->_windowList)) break;
 
-                        window->second->show();
-					}
-				}
+			window->second->modal(true);
+			window->second->set_title(this->_pBuffer->bufferData.at(index).var.text);
+
+			this->_pBuffer->childrenId = value;
+			this->_pBuffer->parentClass = true;
+			this->_pBuffer = this->create_sub_buffer(id, value,
+											std::to_string(this->_pBuffer->bufferData.at(index).var.index));
+
+			window->second->show();
+		}
 		break;
 
         default: break;
     }
-    return 0;
 }

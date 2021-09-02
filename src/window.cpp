@@ -58,6 +58,8 @@ Window::Window(BaseObjectType* cobject,
     this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
+	m_refGlade->get_widget("statusBar", this->statusLabel);
+
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
 
@@ -81,42 +83,8 @@ void Window::signal_show() noexcept
 
 bool Window::signal_hide(GdkEventAny* event) noexcept
 {
-	int changes = this->_dispatcher->handler()->event(this->get_name(), EventType::CHANGE_LIST);
-
-	if(changes > 0)
-	{
-		Gtk::Dialog dialog;
-		Gtk::Label label(std::to_string(changes) + " Unsaved changes");
-		label.override_color(Gdk::RGBA("rgba(255, 0 , 0, 1)"));
-		dialog.get_vbox()->pack_start(label);
-		dialog.add_button("Save", 0);
-		dialog.add_button("Don't save", 1);
-		dialog.add_button("Cancel", 2);
-		dialog.show_all();
-
-		switch(dialog.run())
-		{
-			case 0:
-				this->_dispatcher->handler()->event(this->get_name(), EventType::SAVE);
-			break;
-
-			case 1:
-				{
-					this->_dispatcher->handler()->event(this->get_name(), EventType::HIDE);
-					clear_list(this->_listBox);
-				}
-			break;
-
-			case 2:
-				{
-					dialog.hide();
-					return true;
-				}
-			break;
-		}
-	}
-
-	return false;
+	this->_dispatcher->handler()->event(this->get_name(), EventType::HIDE);
+	return true;
 }
 
 void Window::app(Glib::RefPtr<Gtk::Application> app) noexcept
@@ -153,6 +121,7 @@ void Window::show()
 
 void Window::hide() 
 {
+	clear_list(this->_listBox);
     this->_app->remove_window(*this);
 	Gtk::Window::hide();
 }
@@ -170,6 +139,11 @@ void Window::set_title(std::string_view title) noexcept
 std::string Window::get_title() const noexcept 
 {
 	return Gtk::Window::get_title();
+}
+
+void Window::set_status_message(std::string_view status) noexcept
+{
+	if(this->statusLabel) this->statusLabel->set_text(status.data());
 }
 
 void Window::set_name(std::string_view name) noexcept 

@@ -15,10 +15,10 @@ class Core final : public ICore
 	private:
 		enum _status_
 		{
-			NONE,
 			CHANGE,
 			DELETE,
-			INSERT
+			EMPTY,
+			NONE
 		};
 
 		struct _data_
@@ -32,7 +32,7 @@ class Core final : public ICore
 
 			_data_(_status_ status, std::size_t parent, const Data& var):status(status),
 																		var(var){}
-			_data_():status(_status_::INSERT){}
+			_data_():status(_status_::EMPTY){}
 
 			~_data_() = default;
 		};
@@ -56,6 +56,7 @@ class Core final : public ICore
 		Core::_data_& create_default_element() noexcept;
 
 		void save_buffer(_buffer_& buffer) noexcept;
+		bool buffer_empty(const _buffer_& buffer) const noexcept;
 
 		std::vector<std::pair<std::string, IWindow*>> _windowList;
 		_buffer_* _pBuffer;
@@ -68,9 +69,9 @@ class Core final : public ICore
 
 		void register_window(std::string_view id, IWindow* window) noexcept override;
 
-		int event(std::string_view id, EventType type, std::size_t index) noexcept override;
-		int event(std::string_view id, EventType type) noexcept override;
-		int event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept override;
+		void event(std::string_view id, EventType type, std::size_t index) noexcept override;
+		void event(std::string_view id, EventType type) noexcept override;
+		void event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept override;
 
 };
 

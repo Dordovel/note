@@ -5,6 +5,7 @@
 #include "./dispatcher.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
+#include <gtkmm-3.0/gtkmm/label.h>
 #include <gtkmm-3.0/gtkmm/listbox.h>
 #include <gtkmm-3.0/gtkmm/builder.h>
 #include <glibmm-2.4/glibmm/refptr.h>
@@ -30,6 +31,7 @@ class Window : public Gtk::Window, public IWindow
         Glib::RefPtr<Gtk::Application> _app;
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
+		Gtk::Label* statusLabel;
 
 		std::string _subWindow;
 
@@ -62,6 +64,8 @@ class Window : public Gtk::Window, public IWindow
 
 		void set_title(std::string_view title) noexcept override;
 		std::string get_title() const noexcept override;
+
+		void set_status_message(std::string_view status) noexcept override;
 
 		void set_name(std::string_view name) noexcept override;
 		std::string get_name() const noexcept override;

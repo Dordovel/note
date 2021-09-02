@@ -23,9 +23,9 @@ class IEvent
 {
 	public:
 
-		virtual int event(std::string_view id, EventType type, std::size_t index) noexcept = 0;
-		virtual int event(std::string_view id, EventType type) noexcept = 0;
-		virtual int event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept = 0;
+		virtual void event(std::string_view id, EventType type, std::size_t index) noexcept = 0;
+		virtual void event(std::string_view id, EventType type) noexcept = 0;
+		virtual void event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept = 0;
 };
 
 #endif //EVENT_INTERFACE
