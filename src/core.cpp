@@ -102,7 +102,7 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 					this->_database->query_update(this->_table,
 							{"deleted"},
 							{"1"},
-							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
+							{"parent = " + std::to_string(row.data.index)});
 				}
 				break;
 
