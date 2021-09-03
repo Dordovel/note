@@ -45,7 +45,7 @@ class Core final : public ICore
 
 		Core::_data_ create_empty_element() noexcept;
 
-		void save_buffer(const _buffer_& buffer) const noexcept;
+		_buffer_ save_buffer(_buffer_ buffer) const noexcept;
 		bool buffer_empty(const _buffer_& buffer) const noexcept;
 		_buffer_* current_buffer() noexcept;
 

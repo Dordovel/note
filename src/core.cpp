@@ -66,16 +66,17 @@ Core::_data_ Core::create_empty_element() noexcept { int index = 0;
 	return _data;
 }
 
-void Core::save_buffer(const Core::_buffer_& buffer) const noexcept
+Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 {
 	for(auto& row : buffer._data)
 	{
-
 		if(row.created == Core::_created_::NEW)
 		{
 			this->_database->query_insert(this->_table,
 					{"parent", "data", "status"},
 					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status)});
+
+			row.data.index = this->_database->last_insert_id();
 		}
 
 		if(row.created == Core::_created_::LOAD)
@@ -97,13 +98,22 @@ void Core::save_buffer(const Core::_buffer_& buffer) const noexcept
 							{"deleted"},
 							{"1"},
 							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
+
+					this->_database->query_update(this->_table,
+							{"deleted"},
+							{"1"},
+							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
 				}
 				break;
 
 				default: break;
 			}
 		}
+
+		row.status = Core::_status_::NONE; row.created = Core::_created_::LOAD;
 	}
+
+	return buffer;
 }
 
 bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
@@ -185,8 +195,8 @@ void Core::event(std::string_view id, EventType type) noexcept
 	{
         case EventType::SAVE:
         {
-            this->save_buffer(*pBuffer);
-			std::for_each(pBuffer->_data.begin(),pBuffer->_data.end(), [](auto&& val){val.status = Core::_status_::NONE; val.created = Core::_created_::LOAD;});
+			Core::_buffer_ newBuffer = this->save_buffer(*pBuffer);
+			std::swap(this->_pages.top(), newBuffer);
         }
         break;
 
@@ -246,11 +256,12 @@ void Core::event(std::string_view id, EventType type, std::size_t index, std::st
 
 		case EventType::OPEN:
 		{
-            auto window = get_element(this->_windowList, id);
+			auto window = get_element(this->_windowList, value);
 			if(window == std::end(this->_windowList)) break;
 
             if(!this->buffer_empty(*pBuffer))
             {
+				auto window = get_element(this->_windowList, id);
                 if(window == std::end(this->_windowList)) break;
                 window->second->set_status_message("Changes not saved");
                 break;

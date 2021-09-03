@@ -27,6 +27,11 @@ int Database::connect(std::string_view path) noexcept
 	return sqlite3_open(path.data(), &this->db);
 }
 
+int Database::last_insert_id() const noexcept
+{
+	return sqlite3_last_insert_rowid(this->db);
+}
+
 int Database::query_insert(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& data) noexcept
 {
 	std::string query(std::string("INSERT INTO ") + table.data());
