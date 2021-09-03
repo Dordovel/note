@@ -8,6 +8,7 @@
 #include <glibmm-2.4/glibmm/refptr.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 #include <gtkmm-3.0/gtkmm/window.h>
+#include <stack>
 
 
 class Core final : public ICore
@@ -17,51 +18,42 @@ class Core final : public ICore
 		{
 			CHANGE,
 			DELETE,
-			EMPTY,
 			NONE
+		};
+		
+		enum _created_
+		{
+			LOAD,
+			NEW
 		};
 
 		struct _data_
 		{
 			_status_ status;
+			_created_ created;
 
-			struct Data var;
-
-			_data_(_status_ status, const Data& var): status(status),
-														var(var){}
-
-			_data_(_status_ status, std::size_t parent, const Data& var):status(status),
-																		var(var){}
-			_data_():status(_status_::EMPTY){}
-
-			~_data_() = default;
+			struct Data data;
 		};
 
 		struct _buffer_
 		{
-			std::string windowId;
-			std::string parentId;
-			std::string childrenId;
-			std::string handler;
-
-			bool subClass;
-			bool parentClass;
-			
-			std::vector<_data_> bufferData;
+			int _id;
+			std::vector<_data_> _data;
 		};
 
-		_buffer_* create_default_buffer(std::string_view id) noexcept;
-		_buffer_* create_sub_buffer(std::string_view parent, std::string_view id, std::string_view handler) noexcept;
+		_buffer_ load_buffer(int parent = -1) noexcept;
 
-		Core::_data_& create_default_element() noexcept;
+		Core::_data_ create_empty_element() noexcept;
 
-		void save_buffer(_buffer_& buffer) noexcept;
+		void save_buffer(const _buffer_& buffer) const noexcept;
 		bool buffer_empty(const _buffer_& buffer) const noexcept;
+		_buffer_* current_buffer() noexcept;
 
 		std::vector<std::pair<std::string, IWindow*>> _windowList;
-		_buffer_* _pBuffer;
-        std::vector<_buffer_> _buffers;
+		std::stack<_buffer_> _pages;
 		std::shared_ptr<IDatabase> _database;
+
+		std::string _table = "main";
 
 	public:
 		Core(std::shared_ptr<IDatabase>  database);

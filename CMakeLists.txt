@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(test)
+project(Note)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g")
@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 file(GLOB SOURCE_FILE ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
-add_executable(test
+add_executable(${PROJECT_NAME}
                 ${SOURCE_FILE}
                 main.cpp)
 

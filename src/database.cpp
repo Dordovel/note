@@ -82,7 +82,7 @@ int Database::query_delete(std::string_view table, const std::vector<std::string
 	return sqlite3_exec(this->db, query.c_str(), nullptr, nullptr, nullptr);
 }
 
-std::vector<std::vector<std::string>> Database::query_select(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& predicate) noexcept
+std::vector<std::unordered_map<std::string, std::string>> Database::query_select(std::string_view table, const std::vector<std::string>& columns, const std::vector<std::string>& predicate) noexcept
 {
 	std::string query(std::string("SELECT "));
 
@@ -106,8 +106,8 @@ std::vector<std::vector<std::string>> Database::query_select(std::string_view ta
 	
 	int columnCount = 0;
 
-	std::vector<std::vector<std::string>> result;
-	std::vector<std::string> buffer;
+	std::vector<std::unordered_map<std::string, std::string>> result;
+	std::unordered_map<std::string, std::string> buffer;
 	buffer.reserve(4);
 
 	while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -116,7 +116,7 @@ std::vector<std::vector<std::string>> Database::query_select(std::string_view ta
 
 		for(int a = 0; a < columnCount; ++a)
 		{
-			buffer.emplace_back((char*)sqlite3_column_text(stmt, a));
+			buffer.emplace((char*)sqlite3_column_name(stmt, a), (char*)sqlite3_column_text(stmt, a));
 		}
 		result.emplace_back(std::move(buffer));
 	}

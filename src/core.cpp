@@ -14,222 +14,161 @@ namespace
 	}
 };
 
-Core::Core(std::shared_ptr<IDatabase> database):_database(std::move(database)), _pBuffer(nullptr)
+Core::Core(std::shared_ptr<IDatabase> database):_database(std::move(database)) {}
+
+Core::_buffer_ Core::load_buffer(int parent) noexcept
 {
-}
+	std::vector<std::string> columns {"id", "data", "status", "parent"};
+	std::vector<std::string> predicate {"deleted = 0", std::string("parent = ") + std::to_string(parent) };
 
-Core::_buffer_* Core::create_default_buffer(std::string_view id) noexcept
-{
-	Core::_buffer_& newBuffer = this->_buffers.emplace_back();
-	newBuffer.subClass = false;
-	newBuffer.windowId = id;
+	std::vector<std::unordered_map<std::string, std::string>> result = this->_database->query_select(this->_table, columns, predicate);
 
-	std::vector<std::string> columns {"id", "data", "status"};
-	std::vector<std::string> predicate {"deleted = 0"};
+	std::vector<Core::_data_> buffer;
+	buffer.reserve(result.size());
 
-	std::vector<std::vector<std::string>> result = this->_database->query_select(id, columns, predicate);
-
-	if(!result.empty())
+	for(const auto& row : result)
 	{
-		std::vector<Core::_data_> buffer;
-		buffer.reserve(result.size());
+		Data _row;
+		_row.index = std::stoi(row.at("id"));
+		_row.status = std::stoi(row.at("status"));
+		_row.text = row.at("data");
+
+		Core::_data_ _buffer;
+		_buffer.data = _row;
+		_buffer.created = Core::_created_::LOAD;
+		_buffer.status = Core::_status_::NONE;
 		
-		Core::_status_ status = Core::_status_::NONE;
-		Data data;
-
-		for(const auto& row : result)
-		{
-			data.index = std::stoi(row.at(0));
-			data.text = row.at(1);
-			data.status = std::stoi(row.at(2));
-
-			buffer.emplace_back(status, data);
-		}
-
-		newBuffer.bufferData = std::move(buffer);
+		buffer.emplace_back(_buffer);
 	}
 
-	return &newBuffer;
+	return Core::_buffer_{parent, buffer};
 }
 
-Core::_buffer_* Core::create_sub_buffer(std::string_view parent, std::string_view id, std::string_view handler) noexcept
+Core::_buffer_* Core::current_buffer() noexcept
 {
-	Core::_buffer_& newBuffer = this->_buffers.emplace_back();
-	newBuffer.parentId = parent;
-	newBuffer.subClass = true;
-	newBuffer.windowId = id;
-	newBuffer.handler = handler;
+	return &this->_pages.top();
+}
 
-	std::vector<std::string> columns {"id", "data", "status"};
-	std::vector<std::string> predicate {"deleted = 0", std::string("parent_id = ") + std::string(handler)};
+Core::_data_ Core::create_empty_element() noexcept { int index = 0;
 
-	std::vector<std::vector<std::string>> result = this->_database->query_select(id, columns, predicate);
+	const Core::_buffer_* pBuffer = this->current_buffer();
 
-	if(!result.empty())
+	if(!pBuffer->_data.empty())
 	{
-		std::vector<Core::_data_> buffer;
-		buffer.reserve(result.size());
-		
-		Core::_status_ status = Core::_status_::NONE;
-		Data data;
-
-		for(const auto& row : result)
-		{
-			data.index = std::stoi(row.at(0));
-			data.text = row.at(1);
-			data.status = std::stoi(row.at(2));
-
-			buffer.emplace_back(status, data);
-		}
-
-		newBuffer.bufferData = std::move(buffer);
+		index = ( pBuffer->_data.back().data.index + 1 );
 	}
 
-	return &this->_buffers.back();
+	Core::_data_ _data;
+	_data.status = Core::_status_::CHANGE;
+	_data.created = Core::_created_::NEW;
+	_data.data.index = index;
+
+	return _data;
 }
 
-Core::_data_& Core::create_default_element() noexcept
+void Core::save_buffer(const Core::_buffer_& buffer) const noexcept
 {
-	int index = 0;
-
-	if(this->_pBuffer)
+	for(auto& row : buffer._data)
 	{
-		if(!this->_pBuffer->bufferData.empty())
+
+		if(row.created == Core::_created_::NEW)
 		{
-			index = ( this->_pBuffer->bufferData.back().var.index + 1 );
+			this->_database->query_insert(this->_table,
+					{"parent", "data", "status"},
+					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status)});
 		}
-	}
 
-	Core::_data_ data;
-	data.var.index = index;
-	this->_pBuffer->bufferData.push_back(data);
-
-	return this->_pBuffer->bufferData.back();
-}
-
-void Core::save_buffer(Core::_buffer_& buffer) noexcept
-{
-	for(auto& row : buffer.bufferData)
-	{
-		switch(row.status)
+		if(row.created == Core::_created_::LOAD)
 		{
-			case _status_::DELETE:
+			switch(row.status)
 			{
-				if(buffer.subClass)
+				case Core::_status_::CHANGE:
 				{
-					this->_database->query_update(buffer.windowId,
+					this->_database->query_update(this->_table,
+							{"data", "status"},
+							{row.data.text, std::to_string(row.data.status)},
+							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
+				}
+				break;
+
+				case Core::_status_::DELETE:
+				{
+					this->_database->query_update(this->_table,
 							{"deleted"},
 							{"1"},
-							{"parent_id = " + buffer.handler});
+							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
 				}
-				else
-				{
-					this->_database->query_update(buffer.windowId,
-							{"deleted"},
-							{"1"},
-							{"id = " + std::to_string(row.var.index)});
+				break;
 
-					if(buffer.parentClass)
-					{
-						this->_database->query_update(buffer.childrenId,
-								{"deleted"},
-								{"1"},
-								{"parent_id = " + buffer.handler});
-					}
-					
-				}
-
+				default: break;
 			}
-			break;
-
-			case _status_::EMPTY:
-				{
-					if(buffer.subClass)
-					{
-						this->_database->query_insert(buffer.windowId,
-								{"parent_id", "data", "status"},
-								{buffer.handler, row.var.text, std::to_string(row.var.status)});
-					}
-					else
-					{
-						this->_database->query_insert(buffer.windowId,
-								{"data", "status"},
-								{row.var.text, std::to_string(row.var.status)});
-					}
-				}
-			break;
-
-			case Core::_status_::CHANGE:
-			{
-				this->_database->query_update(buffer.windowId,
-						{"data", "status"},
-						{row.var.text, std::to_string(row.var.status)},
-						{"id = " + std::to_string(row.var.index)});
-			}
-			break;
-
-			default: break;
 		}
-
-		row.status = Core::_status_::NONE;
-
 	}
-
 }
 
 bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
 {
-	auto begin = buffer.bufferData.begin();
-	auto end = buffer.bufferData.end();
-	int changes = std::count_if(begin, end, [](auto&& val){return val.status != Core::_status_::NONE;});
-	
-	return 0 == changes;
+	auto begin = buffer._data.begin();
+	auto end = buffer._data.end();
+
+	for(auto i = begin; i != end; ++i)
+	{
+		if(i->created == Core::_created_::LOAD)
+		{
+			if(i->status != Core::_status_::NONE) return false;
+		}
+		else if (i->created == Core::_created_::NEW)
+		{
+			if(i->status != Core::_status_::NONE
+					&& i->status != Core::_status_::DELETE)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void Core::register_window(std::string_view id, IWindow* window) noexcept 
 {
-    this->_windowList.emplace_back(id, window);
+	this->_windowList.emplace_back(id, window);
 }
 
 void Core::event(std::string_view id, EventType type, std::size_t index) noexcept
 {
-	if(index >= this->_pBuffer->bufferData.size()) return;
+	Core::_buffer_* const pBuffer = this->current_buffer();
 
-    _data_& row = this->_pBuffer->bufferData.at(index);
+	if(index >= pBuffer->_data.size()) return;
+
+    _data_& row = pBuffer->_data.at(index);
 
     switch(type)
     {
-        case EventType::ACTIVATE:
+		case EventType::ACTIVATE:
+		{
+			if(!row.data.status)
 			{
-				if(!row.var.status)
-				{
-					row.status = Core::_status_::CHANGE;
-					row.var.status = true;
-				}
+				row.status = Core::_status_::CHANGE;
+				row.data.status = true;
 			}
+		}
 		break;
 
         case EventType::DEACTIVATE:
+		{
+			if(row.data.status)
 			{
-				if(row.var.status)
-				{
-					row.status = Core::_status_::CHANGE;
-					row.var.status = false;
-				}
+				row.status = Core::_status_::CHANGE;
+				row.data.status = false;
 			}
+		}
 		break;
 
 		case EventType::DELETE:
-			{
-				if(row.status == Core::_status_::DELETE)
-					this->event(id, type, index + 1);
-
-				if (row.status == Core::_status_::EMPTY)
-					row.status = Core::_status_::NONE;
-				else
-				  row.status = Core::_status_::DELETE;
-            }
-			break;
+		{
+			row.status = Core::_status_::DELETE;
+		}
+		break;
 
         default: break;
     }
@@ -240,95 +179,87 @@ void Core::event(std::string_view id, EventType type) noexcept
 	auto window = get_element(this->_windowList, id);
 	if(window == std::end(this->_windowList)) return;
 
+	Core::_buffer_* const pBuffer = this->current_buffer();
+
 	switch(type)
 	{
-		case EventType::SAVE:
-			{
-				this->save_buffer(*this->_pBuffer);
-			}
-		break;
+        case EventType::SAVE:
+        {
+            this->save_buffer(*pBuffer);
+			std::for_each(pBuffer->_data.begin(),pBuffer->_data.end(), [](auto&& val){val.status = Core::_status_::NONE; val.created = Core::_created_::LOAD;});
+        }
+        break;
 
         case EventType::HIDE:
-			{
-				if(!this->buffer_empty(*this->_pBuffer))
-				{
-					window->second->set_status_message("Changes not saved");
-					break;
-				}
+        {
+            if(!this->buffer_empty(*pBuffer))
+            {
+                if(window == std::end(this->_windowList)) break;
+                window->second->set_status_message("Changes not saved");
+                break;
+            }
 
-				if(this->_pBuffer)
-					this->_buffers.erase(std::prev(std::end(this->_buffers)));
+            this->_pages.pop();
 
-				if(!this->_buffers.empty())
-					this->_pBuffer = &this->_buffers.back();
-
-				this->_pBuffer->childrenId.clear();
-				this->_pBuffer->parentClass = false;
-
-				window->second->hide();
-
-			}
-		break;
+            window->second->hide();
+        }
+        break;
 
 		case EventType::SHOW:
-			{
-				if(!this->_pBuffer)
-					if(this->_pBuffer = this->create_default_buffer(id); !this->_pBuffer) break;
+		{
+			if(this->_pages.empty()) this->_pages.push(this->load_buffer());
 
-				for(const auto& val : this->_pBuffer->bufferData)
-					window->second->show_data(val.var);
-			}
+			const Core::_buffer_* const pBuffer = this->current_buffer();
+
+			for(const auto& val : pBuffer->_data)
+				window->second->show_data(val.data);
+		}
 		break;
 
 		case EventType::INSERT:
-			{
-				Core::_data_ val = this->create_default_element();
-				window->second->show_data(val.var);
-			}
+		{
+			Core::_data_ val = this->create_empty_element();
+			Core::_buffer_* pBuffer = this->current_buffer();
+			pBuffer->_data.emplace_back(val);
+
+			window->second->show_data(val.data);
+		}
 		break;
 
 		default: break;
 	}
-
 }
 
 void Core::event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept
 {
-	if(value.empty()) return;
+    Core::_buffer_* const pBuffer = this->current_buffer();
+    Core::_data_& row = pBuffer->_data.at(index);
 
     switch(type)
     {
-        case EventType::CHANGE:
+		case EventType::CHANGE:
 		{
-			Core::_data_& row = this->_pBuffer->bufferData.at(index);
-
-			if(row.status != Core::_status_::EMPTY)
-				row.status = Core::_status_::CHANGE;
-
-			row.var.text = value;
+			row.status = Core::_status_::CHANGE;
+			row.data.text = value;
 		}
 		break;
 
 		case EventType::OPEN:
 		{
-			if(!this->buffer_empty(*this->_pBuffer))
-			{
-				auto parent = get_element(this->_windowList, id);
-				if(parent == std::end(this->_windowList)) break;
-				parent->second->set_status_message("Changes not saved");
-				break;
-			}
-
-			auto window = get_element(this->_windowList, value);
+            auto window = get_element(this->_windowList, id);
 			if(window == std::end(this->_windowList)) break;
 
-			window->second->modal(true);
-			window->second->set_title(this->_pBuffer->bufferData.at(index).var.text);
+            if(!this->buffer_empty(*pBuffer))
+            {
+                if(window == std::end(this->_windowList)) break;
+                window->second->set_status_message("Changes not saved");
+                break;
+            }
 
-			this->_pBuffer->childrenId = value;
-			this->_pBuffer->parentClass = true;
-			this->_pBuffer = this->create_sub_buffer(id, value,
-											std::to_string(this->_pBuffer->bufferData.at(index).var.index));
+			window->second->modal(true);
+			window->second->set_title(row.data.text);
+
+			this->_pages.push(this->load_buffer(row.data.index));
 
 			window->second->show();
 		}
