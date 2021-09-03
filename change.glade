@@ -30,7 +30,6 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">List of Notes</property>
                 <attributes>
                   <attribute name="style" value="oblique"/>
                 </attributes>

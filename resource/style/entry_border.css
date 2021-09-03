@@ -28,6 +28,11 @@ button
     border: 2px solid white;
 }
 
+label
+{
+    color: red;
+}
+
 #NotesLabel:focus
 {
 	color: blue;
