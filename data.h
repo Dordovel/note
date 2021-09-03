@@ -8,9 +8,10 @@ struct Data
     int index;
     std::string text;
     bool status;
+	std::string style;
 
 	Data():index(0), text(""), status(false){};
-	Data(int id, std::string text, bool status): index(id), text(text), status(status){}
+	Data(int id, std::string text, bool status, std::string color): index(id), text(text), status(status), style(color){}
 	~Data() = default;
 };
 

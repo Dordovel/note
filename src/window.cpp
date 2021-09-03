@@ -12,26 +12,8 @@
 #include <gtkmm-3.0/gtkmm/grid.h>
 #include <gtkmm-3.0/gtkmm/dialog.h>
 
-#include <iostream>
-
 namespace
 {
-	void deactivate_entry(Gtk::Entry* entry)
-	{
-		auto style = entry->get_style_context();
-
-		style->remove_class("entryActive");
-		style->add_class("entryDeactive");
-	}
-
-	void activate_entry(Gtk::Entry* entry)
-	{
-		auto style = entry->get_style_context();
-
-		style->remove_class("entryDeactive");
-		style->add_class("entryActive");
-	}
-
 	void remove_row(Gtk::ListBox* list, Gtk::ListBoxRow* row) noexcept
 	{
 		list->remove(*row);
@@ -48,17 +30,17 @@ namespace
 Window::Window(BaseObjectType* cobject,
 	const Glib::RefPtr<Gtk::Builder>& m_refGlade) : Gtk::Window(cobject)
 {
-    m_refGlade->get_widget("listBox", this->_listBox);
-	m_refGlade->get_widget("addNewItemButton", this->_addNewItemButton);
+    m_refGlade->get_widget("ListBox", this->_listBox);
+	m_refGlade->get_widget("AddNewItemButton", this->_addNewItemButton);
 	this->_addNewItemButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_add_new_item));
 
-	m_refGlade->get_widget("saveNoteButton", this->_saveNoteButton);
+	m_refGlade->get_widget("SaveNoteButton", this->_saveNoteButton);
 	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
 
     this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
-	m_refGlade->get_widget("statusBar", this->statusLabel);
+	m_refGlade->get_widget("StatusBar", this->statusBar);
 
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
@@ -143,7 +125,7 @@ std::string Window::get_title() const noexcept
 
 void Window::set_status_message(std::string_view status) noexcept
 {
-	if(this->statusLabel) this->statusLabel->set_text(status.data());
+	if(this->statusBar) this->statusBar->set_text(status.data());
 }
 
 void Window::set_name(std::string_view name) noexcept 
@@ -183,7 +165,7 @@ void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexce
     if(!box) return;
     widgets = box->get_children();
 
-    auto value = find_widget(widgets, "NotesLabel");
+    auto value = find_widget(widgets, "NotesTextEntry");
     if(value != std::end(widgets))
     {
 		Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
@@ -231,19 +213,17 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
     {
         Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*value);
 
-		auto value = find_widget(widgets, "NotesLabel");
+		auto value = find_widget(widgets, "NotesTextEntry");
 		if(value != std::end(widgets))
 		{
 			Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
 
 			if(active->get_active())
 			{
-				deactivate_entry(text);
 				this->_dispatcher->handler()->event(this->get_name(), EventType::DEACTIVATE, row->get_index());
 			}
 			else
 			{
-				activate_entry(text);
 				this->_dispatcher->handler()->event(this->get_name(), EventType::ACTIVATE, row->get_index());
 			}
 		}
@@ -264,13 +244,10 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 
     Gtk::Entry* label = Gtk::manage(new Gtk::Entry);
     label->set_text(value.text);
-    label->set_name("NotesLabel");
+    label->set_name("NotesTextEntry");
     label->property_editable() = false;
     label->property_can_focus() = false;
-    if(value.status)
-        activate_entry(label);
-    else
-        deactivate_entry(label);
+	label->override_color(Gdk::RGBA("#100010010"));
 
     Gtk::Box* box = Gtk::manage(new Gtk::Box());
     box->pack_start(*check, false, false, 12);

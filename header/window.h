@@ -7,16 +7,13 @@
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <gtkmm-3.0/gtkmm/label.h>
 #include <gtkmm-3.0/gtkmm/listbox.h>
+#include <gtkmm-3.0/gtkmm/listboxrow.h>
 #include <gtkmm-3.0/gtkmm/builder.h>
 #include <glibmm-2.4/glibmm/refptr.h>
 #include <gtkmm-3.0/gtkmm/button.h>
 #include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
-
-namespace Gtk
-{
-    class Grid;
-};
+#include <gtkmm-3.0/gtkmm/grid.h>
 
 class Window : public Gtk::Window, public IWindow
 {
@@ -31,7 +28,7 @@ class Window : public Gtk::Window, public IWindow
         Glib::RefPtr<Gtk::Application> _app;
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
-		Gtk::Label* statusLabel;
+		Gtk::Label* statusBar;
 
 		std::string _subWindow;
 

@@ -8,40 +8,47 @@ row
     background-color: white;
 }
 
-entry
+#NotesTextEntry
 {
     border: none;
-    color: blue;
+    color: green;
     background-color: white;
+    font-size: 16px;
+}
+
+#NotesActive
+{
+    color: red;
 }
 
 button
 {
     background-color: white;
     background-image: none;
+    border: 2px solid white;
 }
 
-button:active
+#NotesLabel:focus
 {
-    background-color: lightseagreen;
-    background-image: none;
+	color: blue;
 }
 
-.noteHeader
+#NotesButtonEdit:hover
 {
-	color: green;
-	font-size: 18px;
-	font-weight: bold;
+    border-color: green;
 }
 
-.entryDeactive
+#NotesButtonDelete:hover
 {
-	text-decoration: line-through;
-	color: gray;
+    border-color: red;
 }
 
-.entryActive
+#NotesButtonOpen:hover
 {
-    color: blue;
-	text-decoration: none;
+    border-color: blue;
+}
+
+#SaveNoteButton:hover
+{
+    border-color: blue;
 }

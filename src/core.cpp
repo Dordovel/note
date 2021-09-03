@@ -18,7 +18,7 @@ Core::Core(std::shared_ptr<IDatabase> database):_database(std::move(database)) {
 
 Core::_buffer_ Core::load_buffer(int parent) noexcept
 {
-	std::vector<std::string> columns {"id", "data", "status", "parent"};
+	std::vector<std::string> columns {"id", "data", "status", "parent", "style"};
 	std::vector<std::string> predicate {"deleted = 0", std::string("parent = ") + std::to_string(parent) };
 
 	std::vector<std::unordered_map<std::string, std::string>> result = this->_database->query_select(this->_table, columns, predicate);
@@ -73,8 +73,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 		if(row.created == Core::_created_::NEW)
 		{
 			this->_database->query_insert(this->_table,
-					{"parent", "data", "status"},
-					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status)});
+					{"parent", "data", "status", "style"},
+					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status), row.data.style});
 
 			row.data.index = this->_database->last_insert_id();
 		}
@@ -86,8 +86,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 				case Core::_status_::CHANGE:
 				{
 					this->_database->query_update(this->_table,
-							{"data", "status"},
-							{row.data.text, std::to_string(row.data.status)},
+							{"data", "status", "style"},
+							{row.data.text, std::to_string(row.data.status), row.data.style},
 							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
 				}
 				break;

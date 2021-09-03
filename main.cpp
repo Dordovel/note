@@ -9,7 +9,7 @@
 
 int main()
 {
-    Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("Test");
+    Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("Note");
 	std::shared_ptr<IDatabase> database = std::make_shared<Database>();
 	database->connect("./resource/db/note.db");
 

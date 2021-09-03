@@ -11,7 +11,7 @@
   <object class="GtkImage" id="add">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="stock">gtk-add</property>
+    <property name="pixbuf">resource/image/16px/add-file.png</property>
   </object>
   <object class="GtkWindow" id="mainWindow">
     <property name="name">mainWindow</property>
@@ -26,7 +26,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkLabel" id="statusBar">
+              <object class="GtkLabel" id="StatusBar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
@@ -49,7 +49,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkListBox" id="listBox">
+          <object class="GtkListBox" id="ListBox">
             <property name="name">listBox</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -64,7 +64,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="addNewItemButton">
+          <object class="GtkButton" id="AddNewItemButton">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -82,7 +82,7 @@
             <property name="can-focus">False</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton" id="saveNoteButton">
+              <object class="GtkButton" id="SaveNoteButton">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
