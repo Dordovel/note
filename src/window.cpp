@@ -60,12 +60,12 @@ std::string Window::get_sub_window() noexcept
 
 void Window::signal_show() noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), EventType::SHOW);
+	this->_dispatcher->handler()->event(this->get_name(), Event::SHOW);
 }
 
 bool Window::signal_hide(GdkEventAny* event) noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), EventType::HIDE);
+	this->_dispatcher->handler()->event(this->get_name(), Event::HIDE);
 	return true;
 }
 
@@ -138,19 +138,19 @@ std::string Window::get_name() const noexcept
 	return Gtk::Window::get_name();
 }
 
-void Window::set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept
+void Window::set_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept
 {
-	this->_dispatcher = dispather;
+	this->_dispatcher = std::move(dispatcher);
 }
 
 void Window::button_add_new_item() noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), EventType::INSERT);
+	this->_dispatcher->handler()->event(this->get_name(), Event::INSERT);
 }
 
 void Window::button_save_note() noexcept
 {
-    this->_dispatcher->handler()->event(this->get_name(), EventType::SAVE);
+    this->_dispatcher->handler()->event(this->get_name(), Event::SAVE);
 }
 
 void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
@@ -182,7 +182,7 @@ void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexce
             text->property_editable() = false;
             text->property_can_focus() = false;
 
-			this->_dispatcher->handler()->event(this->get_name(), EventType::CHANGE, row->get_index(), text->get_text().data());
+			this->_dispatcher->handler()->event(this->get_name(), Event::CHANGE, row->get_index(), text->get_text().data());
         }
     }
 }
@@ -191,7 +191,7 @@ void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noex
 {
     if(!row) return;
 
-	this->_dispatcher->handler()->event(this->get_name(), EventType::DELETE, row->get_index());
+	this->_dispatcher->handler()->event(this->get_name(), Event::DELETE, row->get_index());
 
 	remove_row(this->_listBox, row);
 }
@@ -220,11 +220,11 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 
 			if(active->get_active())
 			{
-				this->_dispatcher->handler()->event(this->get_name(), EventType::DEACTIVATE, row->get_index());
+				this->_dispatcher->handler()->event(this->get_name(), Event::DEACTIVATE, row->get_index());
 			}
 			else
 			{
-				this->_dispatcher->handler()->event(this->get_name(), EventType::ACTIVATE, row->get_index());
+				this->_dispatcher->handler()->event(this->get_name(), Event::ACTIVATE, row->get_index());
 			}
 		}
     }

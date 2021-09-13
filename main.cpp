@@ -1,7 +1,7 @@
 #include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
 #include "./header/window.h"
-#include "./header/mainwindow.h"
+#include "./header/main_window.h"
 #include "./header/core.h"
 #include "./header/dispatcher.h"
 
@@ -15,26 +15,26 @@ int main()
 
 	std::shared_ptr<Core> core = std::make_shared<Core>(database);
 
-	std::shared_ptr<Dispatcher> dispather = std::make_shared<Dispatcher>();
-	dispather->set_handle(core);
+	std::shared_ptr<Dispatcher> dispatcher = std::make_shared<Dispatcher>();
+	dispatcher->set_handle(core);
 
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
 	Window* edit = nullptr;
-    builder->add_from_file("./change.glade");
+    builder->add_from_file("./resource/change.glade");
     builder->get_widget_derived("mainWindow", edit);
 	edit->set_size(400);
 	edit->set_name("edit");
-	edit->set_dispatcher(dispather);
+	edit->set_dispatcher(dispatcher);
 	edit->set_style("./resource/style/entry_border.css");
 	edit->app(app);
 
 	MainWindow* main = nullptr;
-	builder->add_from_file("./change.glade");
+	builder->add_from_file("./resource/change.glade");
 	builder->get_widget_derived("mainWindow", main);
 	main->set_size(400);
 	main->set_name("main");
-	main->set_dispatcher(dispather);
+	main->set_dispatcher(dispatcher);
 	main->set_style("./resource/style/entry_border.css");
     main->app(app);
 	main->set_sub_window(edit->get_name());

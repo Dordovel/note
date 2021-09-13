@@ -61,9 +61,9 @@ class Core final : public ICore
 
 		void register_window(std::string_view id, IWindow* window) noexcept override;
 
-		void event(std::string_view id, EventType type, std::size_t index) noexcept override;
-		void event(std::string_view id, EventType type) noexcept override;
-		void event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept override;
+		void event(std::string_view id, Event type, std::size_t index) noexcept override;
+		void event(std::string_view id, Event type) noexcept override;
+		void event(std::string_view id, Event type, std::size_t index, std::string_view value) noexcept override;
 
 };
 

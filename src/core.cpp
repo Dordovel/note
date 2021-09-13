@@ -18,7 +18,7 @@ Core::Core(std::shared_ptr<IDatabase> database):_database(std::move(database)) {
 
 Core::_buffer_ Core::load_buffer(int parent) noexcept
 {
-	std::vector<std::string> columns {"id", "data", "status", "parent", "style"};
+	std::vector<std::string> columns {"id", "data", "status", "parent"};
 	std::vector<std::string> predicate {"deleted = 0", std::string("parent = ") + std::to_string(parent) };
 
 	std::vector<std::unordered_map<std::string, std::string>> result = this->_database->query_select(this->_table, columns, predicate);
@@ -73,8 +73,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 		if(row.created == Core::_created_::NEW)
 		{
 			this->_database->query_insert(this->_table,
-					{"parent", "data", "status", "style"},
-					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status), row.data.style});
+					{"parent", "data", "status"},
+					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status)});
 
 			row.data.index = this->_database->last_insert_id();
 		}
@@ -86,8 +86,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 				case Core::_status_::CHANGE:
 				{
 					this->_database->query_update(this->_table,
-							{"data", "status", "style"},
-							{row.data.text, std::to_string(row.data.status), row.data.style},
+							{"data", "status"},
+							{row.data.text, std::to_string(row.data.status)},
 							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
 				}
 				break;
@@ -144,7 +144,7 @@ void Core::register_window(std::string_view id, IWindow* window) noexcept
 	this->_windowList.emplace_back(id, window);
 }
 
-void Core::event(std::string_view id, EventType type, std::size_t index) noexcept
+void Core::event(std::string_view id, Event type, std::size_t index) noexcept
 {
 	Core::_buffer_* const pBuffer = this->current_buffer();
 
@@ -154,7 +154,7 @@ void Core::event(std::string_view id, EventType type, std::size_t index) noexcep
 
     switch(type)
     {
-		case EventType::ACTIVATE:
+		case Event::ACTIVATE:
 		{
 			if(!row.data.status)
 			{
@@ -164,7 +164,7 @@ void Core::event(std::string_view id, EventType type, std::size_t index) noexcep
 		}
 		break;
 
-        case EventType::DEACTIVATE:
+        case Event::DEACTIVATE:
 		{
 			if(row.data.status)
 			{
@@ -174,7 +174,7 @@ void Core::event(std::string_view id, EventType type, std::size_t index) noexcep
 		}
 		break;
 
-		case EventType::DELETE:
+		case Event::DELETE:
 		{
 			row.status = Core::_status_::DELETE;
 		}
@@ -184,7 +184,7 @@ void Core::event(std::string_view id, EventType type, std::size_t index) noexcep
     }
 }
 
-void Core::event(std::string_view id, EventType type) noexcept 
+void Core::event(std::string_view id, Event type) noexcept 
 {
 	auto window = get_element(this->_windowList, id);
 	if(window == std::end(this->_windowList)) return;
@@ -193,14 +193,14 @@ void Core::event(std::string_view id, EventType type) noexcept
 
 	switch(type)
 	{
-        case EventType::SAVE:
+        case Event::SAVE:
         {
 			Core::_buffer_ newBuffer = this->save_buffer(*pBuffer);
 			std::swap(this->_pages.top(), newBuffer);
         }
         break;
 
-        case EventType::HIDE:
+        case Event::HIDE:
         {
             if(!this->buffer_empty(*pBuffer))
             {
@@ -215,7 +215,7 @@ void Core::event(std::string_view id, EventType type) noexcept
         }
         break;
 
-		case EventType::SHOW:
+		case Event::SHOW:
 		{
 			if(this->_pages.empty()) this->_pages.push(this->load_buffer());
 
@@ -226,7 +226,7 @@ void Core::event(std::string_view id, EventType type) noexcept
 		}
 		break;
 
-		case EventType::INSERT:
+		case Event::INSERT:
 		{
 			Core::_data_ val = this->create_empty_element();
 			Core::_buffer_* pBuffer = this->current_buffer();
@@ -240,21 +240,21 @@ void Core::event(std::string_view id, EventType type) noexcept
 	}
 }
 
-void Core::event(std::string_view id, EventType type, std::size_t index, std::string_view value) noexcept
+void Core::event(std::string_view id, Event type, std::size_t index, std::string_view value) noexcept
 {
     Core::_buffer_* const pBuffer = this->current_buffer();
     Core::_data_& row = pBuffer->_data.at(index);
 
     switch(type)
     {
-		case EventType::CHANGE:
+		case Event::CHANGE:
 		{
 			row.status = Core::_status_::CHANGE;
 			row.data.text = value;
 		}
 		break;
 
-		case EventType::OPEN:
+		case Event::OPEN:
 		{
 			auto window = get_element(this->_windowList, value);
 			if(window == std::end(this->_windowList)) break;

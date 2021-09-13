@@ -1,4 +1,4 @@
-#include "../header/mainwindow.h"
+#include "../header/main_window.h"
 
 #include <gtkmm-3.0/gtkmm/grid.h>
 #include <gtkmm-3.0/gtkmm/button.h>
@@ -33,11 +33,11 @@ Gtk::Grid* MainWindow::create_tool_buttons(Gtk::ListBoxRow* row)
 
 void MainWindow::button_open_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 {
-    this->_dispatcher->handler()->event(this->get_name(), EventType::OPEN, row->get_index(), Window::get_sub_window());
+    this->_dispatcher->handler()->event(this->get_name(), Event::OPEN, row->get_index(), Window::get_sub_window());
 }
 
-void MainWindow::set_dispatcher(const std::shared_ptr <IDispatcher>& dispather) noexcept
+void MainWindow::set_dispatcher(std::shared_ptr <IDispatcher> dispatcher) noexcept
 {
-    Window::set_dispatcher(dispather);
-    this->_dispatcher = dispather;
+    Window::set_dispatcher(dispatcher);
+    this->_dispatcher = std::move(dispatcher);
 }

@@ -67,7 +67,7 @@ class Window : public Gtk::Window, public IWindow
 		void set_name(std::string_view name) noexcept override;
 		std::string get_name() const noexcept override;
 
-        virtual void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept;
+        virtual void set_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept;
 
 		void show_data(const Data& value) noexcept override;
 

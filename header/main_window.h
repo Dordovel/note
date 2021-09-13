@@ -16,9 +16,10 @@ class MainWindow : public Window
 		MainWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade);
 
-        void set_dispatcher(const std::shared_ptr<IDispatcher>& dispather) noexcept override;
+		void set_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept
+			override;
 
-        ~MainWindow() = default;
+		~MainWindow() = default;
 
 };
 
