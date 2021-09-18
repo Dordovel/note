@@ -235,8 +235,7 @@ void Core::event(std::string_view id, Event type) noexcept
 			Core::_buffer_* const pBuffer = this->current_buffer();
 			pBuffer->window = id;
 
-			for(const auto& val : pBuffer->_data)
-				window->show_data(val.data);
+			this->update_window_buffer(window.get(), *pBuffer);
 		}
 		break;
 
