@@ -47,7 +47,12 @@ button
 {
     background-color: white;
     background-image: none;
-    border: 2px solid white;
+    border: 1px solid white;
+}
+
+button:hover
+{
+	border: 1px solid black;
 }
 
 label
