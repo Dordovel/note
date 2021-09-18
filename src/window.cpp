@@ -1,6 +1,7 @@
 #include "../header/window.h"
 
 #include "../data.h"
+#include "../window_types.hpp"
 
 #include <algorithm>
 
@@ -46,16 +47,6 @@ Window::Window(BaseObjectType* cobject,
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
 
 	Gtk::Window::signal_delete_event().connect(sigc::mem_fun(this, &Window::signal_hide));
-}
-
-void Window::set_sub_window(std::string_view id) noexcept
-{
-	this->_subWindow = id;
-}
-
-std::string Window::get_sub_window() noexcept
-{
-	return this->_subWindow;
 }
 
 void Window::signal_show() noexcept
@@ -108,6 +99,11 @@ void Window::hide()
 	Gtk::Window::hide();
 }
 
+void Window::clear() noexcept
+{
+	clear_list(this->_listBox);
+}
+
 void Window::modal(bool flag) noexcept
 {
 	Gtk::Window::set_modal(flag);
@@ -157,34 +153,7 @@ void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexce
 {
     if(!row) return;
 
-    std::vector<Gtk::Widget*> widgets = row->get_children();
-	if(widgets.empty())
-		return;
-
-    Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
-    if(!box) return;
-    widgets = box->get_children();
-
-    auto value = find_widget(widgets, "NotesTextEntry");
-    if(value != std::end(widgets))
-    {
-		Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
-
-		if(!text->get_editable())
-        {
-            text->property_editable() = true;
-            text->property_can_focus() = true;
-            text->grab_focus_without_selecting();
-            text->set_position(text->get_text_length());
-        }
-        else
-        {
-            text->property_editable() = false;
-            text->property_can_focus() = false;
-
-			this->_dispatcher->handler()->event(this->get_name(), Event::CHANGE, row->get_index(), text->get_text().data());
-        }
-    }
+    this->_dispatcher->handler()->event(this->get_name(), Event::OPEN, row->get_index(), WindowType::EDIT);
 }
 
 void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
@@ -212,21 +181,10 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
     if(value != std::end(widgets))
     {
         Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*value);
-
-		auto value = find_widget(widgets, "NotesTextEntry");
-		if(value != std::end(widgets))
-		{
-			Gtk::Entry* text = static_cast<Gtk::Entry*>(*value);
-
-			if(active->get_active())
-			{
-				this->_dispatcher->handler()->event(this->get_name(), Event::DEACTIVATE, row->get_index());
-			}
-			else
-			{
-				this->_dispatcher->handler()->event(this->get_name(), Event::ACTIVATE, row->get_index());
-			}
-		}
+        if(active->get_active())
+            this->_dispatcher->handler()->event(this->get_name(), Event::DEACTIVATE, row->get_index());
+        else
+            this->_dispatcher->handler()->event(this->get_name(), Event::ACTIVATE, row->get_index());
     }
 }
 
@@ -242,12 +200,10 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
     auto toggle_handle = [this, row=row, check=check](){this->toggle_check(check, row);};
     check->signal_pressed().connect(toggle_handle);
 
-    Gtk::Entry* label = Gtk::manage(new Gtk::Entry);
-    label->set_text(value.text);
-    label->set_name("NotesTextEntry");
-    label->property_editable() = false;
-    label->property_can_focus() = false;
-	label->override_color(Gdk::RGBA("#100010010"));
+    Gtk::Label* label = Gtk::manage(new Gtk::Label);
+    label->set_text(value.title);
+    label->set_name("NotesLabel");
+    label->set_halign(Gtk::Align::ALIGN_FILL);
 
     Gtk::Box* box = Gtk::manage(new Gtk::Box());
     box->pack_start(*check, false, false, 12);

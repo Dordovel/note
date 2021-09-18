@@ -1,58 +1,44 @@
-#ifndef WINDOW
-#define WINDOW
+#ifndef EDIT_WINDOW
+#define EDIT_WINDOW
 
 #include "../interface/window.h"
 #include "./dispatcher.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
-#include <gtkmm-3.0/gtkmm/label.h>
-#include <gtkmm-3.0/gtkmm/listbox.h>
-#include <gtkmm-3.0/gtkmm/listboxrow.h>
-#include <gtkmm-3.0/gtkmm/builder.h>
 #include <glibmm-2.4/glibmm/refptr.h>
-#include <gtkmm-3.0/gtkmm/button.h>
-#include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
-#include <gtkmm-3.0/gtkmm/grid.h>
+#include <gtkmm-3.0/gtkmm/builder.h>
+#include <gtkmm-3.0/gtkmm/cssprovider.h>
+#include <gtkmm-3.0/gtkmm/label.h>
+#include <gtkmm-3.0/gtkmm/entry.h>
+#include <gtkmm-3.0/gtkmm/textview.h>
+#include <gtkmm-3.0/gtkmm/button.h>
 
-class Window : public Gtk::Window, public IWindow
+class EditWindow : public Gtk::Window, public IWindow
 {
 	private:
 		std::shared_ptr<IDispatcher> _dispatcher;
-        Glib::RefPtr<Gdk::Pixbuf> _editIcon;
-		Glib::RefPtr<Gdk::Pixbuf> _deleteIcon;
 		Glib::RefPtr<Gtk::CssProvider> _cssEntry;
 		Glib::RefPtr<Gdk::Screen> _screen;
 		Glib::RefPtr<Gtk::StyleContext> _styleContext;
         Glib::RefPtr<Gtk::Application> _app;
 
-        Gtk::ListBox* _listBox;
-		Gtk::Button* _addNewItemButton;
-		Gtk::Button* _saveNoteButton;
 		Gtk::Label* statusBar;
+		Gtk::TextView* _view;
+		Gtk::Entry* _title;
+
+		Gtk::Button* _saveNoteButton;
 
         void signal_show() noexcept;
         bool signal_hide(GdkEventAny* event) noexcept;
-
-		void button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
-        void button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
-        void toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
-		void button_add_new_item() noexcept;
-		void button_save_note() noexcept;
-
-		Gtk::ListBoxRow* create_new_row(const Data& value) noexcept;
-
-
-    protected:
-        virtual class Gtk::Grid* create_tool_buttons(Gtk::ListBoxRow* row);
-
+		void signal_save(struct Data old) noexcept;
 
 	public:
-		Window(BaseObjectType* cobject, 
+		EditWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade);
 
-		Window(Window&& window) = default;
-		Window& operator= (Window&& window) = default;
+		EditWindow(EditWindow&& window) = default;
+		EditWindow& operator= (EditWindow&& window) = default;
 
 		void show() override;
 		void hide() override;
@@ -78,9 +64,6 @@ class Window : public Gtk::Window, public IWindow
         void set_size(int width = -1, int height = -1) noexcept override;
 
 		void clear() noexcept override;
-
-        virtual ~Window() = default;
-
 };
 
-#endif //WINDOW
+#endif //EDIT_WINDOW

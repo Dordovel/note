@@ -2,7 +2,6 @@
 #define EVENT_INTERFACE
 
 #include <string_view>
-#include <vector>
 
 enum Event
 {
@@ -15,8 +14,11 @@ enum Event
 	ACTIVATE,
 	DEACTIVATE,
 	SAVE,
-	UPDATE,
+	UPDATE
 };
+
+enum class WindowType;
+struct Data;
 
 class IEvent
 {
@@ -24,7 +26,8 @@ class IEvent
 
 		virtual void event(std::string_view id, Event type, std::size_t index) noexcept = 0;
 		virtual void event(std::string_view id, Event type) noexcept = 0;
-		virtual void event(std::string_view id, Event type, std::size_t index, std::string_view value) noexcept = 0;
+		virtual void event(std::string_view id, Event type, struct Data value) noexcept = 0;
+		virtual void event(std::string_view id, Event type, std::size_t index, WindowType window) noexcept = 0;
 };
 
 #endif //EVENT_INTERFACE

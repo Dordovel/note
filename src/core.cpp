@@ -1,7 +1,6 @@
-#include "../header/core.h"
-
 #include <iostream>
-#include <utility>
+#include "../header/core.h"
+#include "../window_types.hpp"
 #include <algorithm>
 
 namespace 
@@ -18,7 +17,7 @@ Core::Core(std::shared_ptr<IDatabase> database):_database(std::move(database)) {
 
 Core::_buffer_ Core::load_buffer(int parent) noexcept
 {
-	std::vector<std::string> columns {"id", "data", "status", "parent"};
+	std::vector<std::string> columns {"id", "data", "status", "parent", "note"};
 	std::vector<std::string> predicate {"deleted = 0", std::string("parent = ") + std::to_string(parent) };
 
 	std::vector<std::unordered_map<std::string, std::string>> result = this->_database->query_select(this->_table, columns, predicate);
@@ -31,7 +30,8 @@ Core::_buffer_ Core::load_buffer(int parent) noexcept
 		Data _row;
 		_row.index = std::stoi(row.at("id"));
 		_row.status = std::stoi(row.at("status"));
-		_row.text = row.at("data");
+		_row.title = row.at("data");
+		_row.note = row.at("note");
 
 		Core::_data_ _buffer;
 		_buffer.data = _row;
@@ -41,7 +41,7 @@ Core::_buffer_ Core::load_buffer(int parent) noexcept
 		buffer.emplace_back(_buffer);
 	}
 
-	return Core::_buffer_{parent, buffer};
+	return Core::_buffer_{parent, "", buffer};
 }
 
 Core::_buffer_* Core::current_buffer() noexcept
@@ -73,8 +73,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 		if(row.created == Core::_created_::NEW)
 		{
 			this->_database->query_insert(this->_table,
-					{"parent", "data", "status"},
-					{std::to_string(buffer._id), row.data.text, std::to_string(row.data.status)});
+					{"parent", "data", "status", "note"},
+					{ std::to_string(buffer._id), row.data.title, std::to_string(row.data.status), row.data.note});
 
 			row.data.index = this->_database->last_insert_id();
 		}
@@ -86,8 +86,8 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 				case Core::_status_::CHANGE:
 				{
 					this->_database->query_update(this->_table,
-							{"data", "status"},
-							{row.data.text, std::to_string(row.data.status)},
+							{"data", "status", "note"},
+							{ row.data.title, std::to_string(row.data.status), row.data.note},
 							{"id = " + std::to_string(row.data.index), "parent = " + std::to_string(buffer._id)});
 				}
 				break;
@@ -139,9 +139,24 @@ bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
 	return true;
 }
 
-void Core::register_window(std::string_view id, IWindow* window) noexcept 
+void Core::update_window_buffer(std::string_view window, const Core::_buffer_& buffer) noexcept
 {
-	this->_windowList.emplace_back(id, window);
+    auto weakPointer = this->_manager->get_window(window);
+    auto windowPointer = weakPointer.lock();
+    if(windowPointer) this->update_window_buffer(&(*windowPointer), buffer);
+}
+
+void Core::update_window_buffer(IWindow* window, const Core::_buffer_& buffer) noexcept
+{
+    window->clear();
+
+	for(const auto& val : buffer._data)
+		window->show_data(val.data);
+}
+
+void Core::register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept 
+{
+	this->_manager = std::move(manager);
 }
 
 void Core::event(std::string_view id, Event type, std::size_t index) noexcept
@@ -186,8 +201,9 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
 
 void Core::event(std::string_view id, Event type) noexcept 
 {
-	auto window = get_element(this->_windowList, id);
-	if(window == std::end(this->_windowList)) return;
+	auto weakPointer = this->_manager->get_window(id);
+	auto window = weakPointer.lock();
+	if(!window) return;
 
 	Core::_buffer_* const pBuffer = this->current_buffer();
 
@@ -204,25 +220,23 @@ void Core::event(std::string_view id, Event type) noexcept
         {
             if(!this->buffer_empty(*pBuffer))
             {
-                if(window == std::end(this->_windowList)) break;
-                window->second->set_status_message("Changes not saved");
+                window->set_status_message("Changes not saved");
                 break;
             }
 
             this->_pages.pop();
-
-            window->second->hide();
+            window->hide();
         }
         break;
 
 		case Event::SHOW:
 		{
 			if(this->_pages.empty()) this->_pages.push(this->load_buffer());
-
-			const Core::_buffer_* const pBuffer = this->current_buffer();
+			Core::_buffer_* const pBuffer = this->current_buffer();
+			pBuffer->window = id;
 
 			for(const auto& val : pBuffer->_data)
-				window->second->show_data(val.data);
+				window->show_data(val.data);
 		}
 		break;
 
@@ -232,7 +246,7 @@ void Core::event(std::string_view id, Event type) noexcept
 			Core::_buffer_* pBuffer = this->current_buffer();
 			pBuffer->_data.emplace_back(val);
 
-			window->second->show_data(val.data);
+			window->show_data(val.data);
 		}
 		break;
 
@@ -240,39 +254,68 @@ void Core::event(std::string_view id, Event type) noexcept
 	}
 }
 
-void Core::event(std::string_view id, Event type, std::size_t index, std::string_view value) noexcept
+void Core::event(std::string_view id, Event type, struct Data value) noexcept
+{
+    Core::_buffer_ last = *(this->current_buffer());
+    auto begin = last._data.begin();
+    auto end = last._data.end();
+    auto row = std::find_if(begin, end, [id = value.index](auto val){ return val.data.index == id; });
+
+    switch(type)
+    {
+		case Event::CHANGE:
+		{
+		    if(row->data.note != value.note || row->data.title != value.title)
+            {
+                row->status = Core::_status_::CHANGE;
+                row->data = std::move(value);
+
+                this->_pages.pop();
+                auto& prev = this->_pages.top();
+                last.window = prev.window;
+                std::swap(last, prev);
+                this->_pages.push(Core::_buffer_());
+
+				this->update_window_buffer(prev.window, prev);
+            }
+		}
+		break;
+
+        default: break;
+    }
+}
+
+void Core::event(std::string_view id, Event type, std::size_t index, WindowType window) noexcept
 {
     Core::_buffer_* const pBuffer = this->current_buffer();
     Core::_data_& row = pBuffer->_data.at(index);
 
     switch(type)
     {
-		case Event::CHANGE:
-		{
-			row.status = Core::_status_::CHANGE;
-			row.data.text = value;
-		}
-		break;
-
 		case Event::OPEN:
 		{
-			auto window = get_element(this->_windowList, value);
-			if(window == std::end(this->_windowList)) break;
+			auto weakPointer = this->_manager->get_window(window);
+			auto windowPointer = weakPointer.lock();
+			if(!windowPointer) return;
 
-            if(!this->buffer_empty(*pBuffer))
+			if(window == WindowType::EDIT)
             {
-				auto window = get_element(this->_windowList, id);
-                if(window == std::end(this->_windowList)) break;
-                window->second->set_status_message("Changes not saved");
-                break;
+                this->_pages.push(*pBuffer);
             }
+			else
+			{
+				if(!this->buffer_empty(*pBuffer))
+				{
+					windowPointer->set_status_message("Changes not saved");
+					return;
+				}
 
-			window->second->modal(true);
-			window->second->set_title(row.data.text);
+                this->_pages.push(this->load_buffer(row.data.index));
+			}
 
-			this->_pages.push(this->load_buffer(row.data.index));
-
-			window->second->show();
+			windowPointer->modal(true);
+			windowPointer->set_title(row.data.title);
+			windowPointer->show();
 		}
 		break;
 

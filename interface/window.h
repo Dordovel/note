@@ -1,9 +1,7 @@
 #ifndef WINDOW_INTERFACE
 #define WINDOW_INTERFACE
 
-
 #include <string>
-#include <string_view>
 #include <vector>
 
 struct Data;
@@ -31,8 +29,7 @@ class IWindow
 
 		virtual void show_data(const struct Data& value) noexcept = 0;
 
-		virtual void set_sub_window(std::string_view id) noexcept = 0;
-		virtual std::string get_sub_window() noexcept = 0;
+		virtual void clear() noexcept = 0;
 		
 		virtual ~IWindow() = default;
 

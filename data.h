@@ -6,11 +6,11 @@
 struct Data
 {
     int index;
-    std::string text;
+    std::string title;
+    std::string note;
     bool status;
 
-	Data():index(0), text(""), status(false){};
-	Data(int id, std::string text, bool status, std::string color): index(id), text(text), status(status){}
+	Data(): index(0), title(""), status(false), note(""){};
 	~Data() = default;
 };
 

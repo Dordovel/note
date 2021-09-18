@@ -4,12 +4,12 @@
 #include "./window.h"
 #include "./event.h"
 
-#include <memory>
+#include "window_manager.hpp"
 
 class ICore : public IEvent
 {
 	public:
-		virtual void register_window(std::string_view id, IWindow* window) noexcept = 0;
+		virtual void register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept = 0;
 
 		virtual ~ICore() = default;
 

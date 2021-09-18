@@ -8,12 +8,34 @@ row
     background-color: white;
 }
 
-#NotesTextEntry
+entry
 {
     border: none;
-    color: green;
+    color: gray;
     background-color: white;
-    font-size: 16px;
+    font-size: 14px;
+}
+
+entry:focus
+{
+    border: none;
+    color: blue;
+    background-color: white;
+    font-size: 14px;
+}
+
+text
+{
+	background-color: white;
+	font-size: 14px;
+	color: gray;
+}
+
+text:focus
+{
+	background-color: white;
+	font-size: 14px;
+	color: black;
 }
 
 #NotesActive
@@ -53,7 +75,14 @@ label
     border-color: blue;
 }
 
-#SaveNoteButton:hover
+buttonbox > button:hover
 {
-    border-color: blue;
+	border: 1px solid green;
+	transition: 0s linear;
+}
+
+buttonbox > button
+{
+	border-color: white;
+	transition: 2s linear;
 }

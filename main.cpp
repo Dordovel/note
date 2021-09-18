@@ -1,11 +1,10 @@
 #include <gtkmm-3.0/gtkmm.h>
-#include <iostream>
 #include "./header/window.h"
 #include "./header/main_window.h"
+#include "./header/edit_window.hpp"
 #include "./header/core.h"
-#include "./header/dispatcher.h"
-
-#include "./header/database.h"
+#include "./header/window_manager.hpp"
+#include "window_types.hpp"
 
 int main()
 {
@@ -20,34 +19,45 @@ int main()
 
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
-	Window* edit = nullptr;
+	Window* gtkListWindowPointer = nullptr;
     builder->add_from_file("./resource/change.glade");
-    builder->get_widget_derived("mainWindow", edit);
-	edit->set_size(400);
-	edit->set_name("edit");
-	edit->set_dispatcher(dispatcher);
-	edit->set_style("./resource/style/entry_border.css");
-	edit->app(app);
+    builder->get_widget_derived("mainWindow", gtkListWindowPointer);
+	gtkListWindowPointer->set_size(400);
+	gtkListWindowPointer->set_name("list");
+	gtkListWindowPointer->set_dispatcher(dispatcher);
+	gtkListWindowPointer->set_style("./resource/style/entry_border.css");
+	gtkListWindowPointer->app(app);
 
-	MainWindow* main = nullptr;
+	MainWindow* gtkMainWindowPointer = nullptr;
 	builder->add_from_file("./resource/change.glade");
-	builder->get_widget_derived("mainWindow", main);
-	main->set_size(400);
-	main->set_name("main");
-	main->set_dispatcher(dispatcher);
-	main->set_style("./resource/style/entry_border.css");
-    main->app(app);
-	main->set_sub_window(edit->get_name());
+	builder->get_widget_derived("mainWindow", gtkMainWindowPointer);
+	gtkMainWindowPointer->set_size(400);
+	gtkMainWindowPointer->set_name("main");
+	gtkMainWindowPointer->set_dispatcher(dispatcher);
+	gtkMainWindowPointer->set_style("./resource/style/entry_border.css");
+    gtkMainWindowPointer->app(app);
 
+	EditWindow* gtkEditWindowPointer = nullptr;
+	builder->add_from_file("./resource/change.glade");
+	builder->get_widget_derived("EditWindow", gtkEditWindowPointer);
+	gtkEditWindowPointer->set_size(400, 400);
+	gtkEditWindowPointer->set_name("edit");
+	gtkEditWindowPointer->set_dispatcher(dispatcher);
+	gtkEditWindowPointer->set_style("./resource/style/entry_border.css");
+    gtkEditWindowPointer->app(app);
 
-	core->register_window(main->get_name(), main);
-	core->register_window(edit->get_name(), edit);
+	std::shared_ptr<Window> gtkListWindow(gtkListWindowPointer);
+	std::shared_ptr<EditWindow> gtkEditWindow(gtkEditWindowPointer);
+	std::shared_ptr<MainWindow> gtkMainWindow(gtkMainWindowPointer);
 
+	std::unique_ptr<WindowManager> manager = std::make_unique<WindowManager>();
+	manager->register_window(gtkListWindow->get_name(), WindowType::LIST, std::move(gtkListWindow));
+	manager->register_window(gtkEditWindow->get_name(), WindowType::EDIT, std::move(gtkEditWindow));
+	manager->register_window(gtkMainWindow->get_name(), WindowType::MAIN, std::move(gtkMainWindow));
 
-	app->run(*main);
+	core->register_manager(std::move(manager));
 
-	delete main;
-	delete edit;
+	app->run(*gtkMainWindowPointer);
 
 	return 0;
 }
