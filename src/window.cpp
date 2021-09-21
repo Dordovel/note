@@ -2,6 +2,8 @@
 
 #include "../data.h"
 #include "../window_types.hpp"
+#include "gtkmm/alignment.h"
+#include "gtkmm/enums.h"
 
 #include <algorithm>
 
@@ -217,6 +219,7 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 
     Gtk::Label* label = Gtk::manage(new Gtk::Label);
     label->set_text(value.title);
+	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
     label->set_name("NotesLabel");
     label->set_halign(Gtk::Align::ALIGN_FILL);
 
