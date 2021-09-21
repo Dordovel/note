@@ -10,7 +10,6 @@ list
 
 row
 {
-	background-color: white;
 	border-image-source: linear-gradient(to left, blue, #d53a9d);
 	border-top: 1px solid;
 	border-left: 1px solid;
@@ -33,16 +32,17 @@ button
 	border: 1px solid;
 }
 
-.odd
+.oddListRow
 {
 	background-color: lightblue;
 }
 
-.even
+.evenListRow
 {
+	background-color: white;
 }
 
-.active
+.activeListRow
 {
 	background-color: orange;
 }

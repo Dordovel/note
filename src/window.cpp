@@ -182,12 +182,12 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
         Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*value);
         if(active->get_active())
 		{
-			row->get_style_context()->remove_class("active");
+			row->get_style_context()->remove_class("activeListRow");
             this->_dispatcher->handler()->event(this->get_name(), Event::DEACTIVATE, row->get_index());
 		}
         else
 		{
-			row->get_style_context()->add_class("active");
+			row->get_style_context()->add_class("activeListRow");
             this->_dispatcher->handler()->event(this->get_name(), Event::ACTIVATE, row->get_index());
 		}
     }
@@ -207,10 +207,10 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 
 	auto rowStyleContext = row->get_style_context();
 
-	if(0 != (newRowIndex %2)) rowStyleContext->add_class("odd");
-	else rowStyleContext->add_class("event");
+	if(0 != (newRowIndex %2)) rowStyleContext->add_class("oddListRow");
+	else rowStyleContext->add_class("evenListRow");
 
-	if(value.status) row->get_style_context()->add_class("active");
+	if(value.status) row->get_style_context()->add_class("activeListRow");
 
     Gtk::CheckButton* check = Gtk::manage(new Gtk::CheckButton);
     check->property_active() = value.status;
