@@ -199,8 +199,6 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
     row->property_activatable() = false;
     row->property_selectable() = false;
 
-	if(0 != (newRowIndex %2 )) row->get_style_context()->add_class("odd");
-
     Gtk::CheckButton* check = Gtk::manage(new Gtk::CheckButton);
     check->property_active() = value.status;
     check->set_name("NotesActive");

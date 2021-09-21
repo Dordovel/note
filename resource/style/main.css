@@ -33,7 +33,7 @@ button
 	border: 1px solid;
 }
 
-.odd
+row:nth-child(odd)
 {
 	background-color: lightblue;
 }
