@@ -14,6 +14,7 @@
 #include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 #include <gtkmm-3.0/gtkmm/grid.h>
+#include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 
 class Window : public Gtk::Window, public IWindow
 {
@@ -21,15 +22,13 @@ class Window : public Gtk::Window, public IWindow
 		std::shared_ptr<IDispatcher> _dispatcher;
         Glib::RefPtr<Gdk::Pixbuf> _editIcon;
 		Glib::RefPtr<Gdk::Pixbuf> _deleteIcon;
-		Glib::RefPtr<Gtk::CssProvider> _cssEntry;
-		Glib::RefPtr<Gdk::Screen> _screen;
-		Glib::RefPtr<Gtk::StyleContext> _styleContext;
         Glib::RefPtr<Gtk::Application> _app;
 
         Gtk::ListBox* _listBox;
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
 		Gtk::Label* statusBar;
+		Gtk::ScrolledWindow* _scrolledWindow;
 
         void signal_show() noexcept;
         bool signal_hide(GdkEventAny* event) noexcept;

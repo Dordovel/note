@@ -19,8 +19,6 @@ class EditWindow : public Gtk::Window, public IWindow
 	private:
 		std::shared_ptr<IDispatcher> _dispatcher;
 		Glib::RefPtr<Gtk::CssProvider> _cssEntry;
-		Glib::RefPtr<Gdk::Screen> _screen;
-		Glib::RefPtr<Gtk::StyleContext> _styleContext;
         Glib::RefPtr<Gtk::Application> _app;
 
 		Gtk::Label* statusBar;

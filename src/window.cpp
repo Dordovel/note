@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include <cstddef>
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/button.h>
 #include <gtkmm-3.0/gtkmm/entry.h>
@@ -42,6 +43,7 @@ Window::Window(BaseObjectType* cobject,
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
 
 	m_refGlade->get_widget("StatusBar", this->statusBar);
+	m_refGlade->get_widget("ScrollWindow", this->_scrolledWindow);
 
     Gtk::Window::set_resizable(false);
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show));
@@ -72,13 +74,10 @@ void Window::set_size(int width, int height) noexcept
 
 void Window::set_style(std::string_view path) noexcept
 {
-    this->_cssEntry = Gtk::CssProvider::create();
-    this->_cssEntry->load_from_path(path.data());
+    auto cssProvider = Gtk::CssProvider::create();
+    cssProvider->load_from_path(path.data());
 
-    _styleContext = Gtk::StyleContext::create();
-
-    this->_screen = Gtk::Window::get_screen();
-    this->_styleContext->add_provider_for_screen(this->_screen, this->_cssEntry, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	Gtk::Window::get_style_context()->add_provider_for_screen(Gtk::Window::get_screen(), cssProvider, GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 auto find_widget(const std::vector<Gtk::Widget*>& array, std::string_view id)
@@ -190,9 +189,17 @@ void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
 
 Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 {
+	auto rowCount = this->_listBox->get_children().size();
+	auto newRowIndex = rowCount + 1;
+
+	Gtk::Label* index = Gtk::manage(new Gtk::Label);
+	index->set_text(std::to_string(newRowIndex) + std::string("."));
+
     Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
     row->property_activatable() = false;
     row->property_selectable() = false;
+
+	if(0 != (newRowIndex %2 )) row->get_style_context()->add_class("odd");
 
     Gtk::CheckButton* check = Gtk::manage(new Gtk::CheckButton);
     check->property_active() = value.status;
@@ -206,6 +213,7 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
     label->set_halign(Gtk::Align::ALIGN_FILL);
 
     Gtk::Box* box = Gtk::manage(new Gtk::Box());
+    box->pack_start(*index, false, false, 12);
     box->pack_start(*check, false, false, 12);
     box->pack_start(*label, true, true, 10);
 
@@ -223,6 +231,8 @@ void Window::show_data(const Data& value) noexcept
 {
     this->_listBox->append(*this->create_new_row(value));
     this->_listBox->show_all_children();
+	auto vAdjustment = this->_scrolledWindow->get_vadjustment();
+	vAdjustment->set_value(vAdjustment->get_upper());
 }
 
 Gtk::Grid* Window::create_tool_buttons(Gtk::ListBoxRow* row)

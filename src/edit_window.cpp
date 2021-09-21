@@ -8,7 +8,7 @@ EditWindow::EditWindow(BaseObjectType* cobject,
 	m_refGlade->get_widget("StatusBar", this->statusBar);
 	m_refGlade->get_widget("EditWindowBodyView", this->_view);
     m_refGlade->get_widget("EditWindowBodyTitle", this->_title);
-	m_refGlade->get_widget("SaveNoteButtonEditForm", this->_saveNoteButton);
+	m_refGlade->get_widget("SaveNoteButton", this->_saveNoteButton);
 
 	this->_title->property_xalign() = 0.5f;
 
@@ -41,13 +41,10 @@ void EditWindow::set_size(int width, int height) noexcept
 
 void EditWindow::set_style(std::string_view path) noexcept
 {
-    this->_cssEntry = Gtk::CssProvider::create();
-    this->_cssEntry->load_from_path(path.data());
+    auto cssProvider = Gtk::CssProvider::create();
+    cssProvider->load_from_path(path.data());
 
-    _styleContext = Gtk::StyleContext::create();
-
-    this->_screen = Gtk::Window::get_screen();
-    this->_styleContext->add_provider_for_screen(this->_screen, this->_cssEntry, GTK_STYLE_PROVIDER_PRIORITY_USER);
+	Gtk::Window::get_style_context()->add_provider_for_screen(Gtk::Window::get_screen(), cssProvider, GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 void EditWindow::show()
@@ -105,11 +102,18 @@ void EditWindow::set_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcep
 
 void EditWindow::signal_save(struct Data old) noexcept
 {
+	if(0 == this->_title->get_text_length())
+	{
+		this->set_status_message("Title is empty");
+		this->_title->get_style_context()->add_class("error");
+		return;
+	}
+
+	old.title = this->_title->get_text();
     auto viewBuffer = this->_view->get_buffer();
 	old.note = std::string(viewBuffer->get_text().data(), viewBuffer->get_text().length());
-	old.title = this->_title->get_text();
 	this->_dispatcher->handler()->event(this->get_name(), Event::CHANGE, old);
-    this->_dispatcher->handler()->event(this->get_name(), Event::HIDE);
+	this->_dispatcher->handler()->event(this->get_name(), Event::HIDE);
 }
 
 void EditWindow::show_data(const Data& value) noexcept

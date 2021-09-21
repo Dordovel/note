@@ -49,7 +49,9 @@ Core::_buffer_* Core::current_buffer() noexcept
 	return &this->_pages.top();
 }
 
-Core::_data_ Core::create_empty_element() noexcept { int index = 0;
+Core::_data_ Core::create_empty_element() noexcept
+{
+	int index = 0;
 
 	const Core::_buffer_* pBuffer = this->current_buffer();
 
@@ -255,28 +257,27 @@ void Core::event(std::string_view id, Event type) noexcept
 
 void Core::event(std::string_view id, Event type, struct Data value) noexcept
 {
-    Core::_buffer_ last = *(this->current_buffer());
-    auto begin = last._data.begin();
-    auto end = last._data.end();
-    auto row = std::find_if(begin, end, [id = value.index](auto val){ return val.data.index == id; });
 
     switch(type)
     {
 		case Event::CHANGE:
 		{
+			this->_pages.pop();
+			Core::_buffer_* last = this->current_buffer();
+			auto begin = last->_data.begin();
+			auto end = last->_data.end();
+			auto row = std::find_if(begin, end, [id = value.index](auto val){ return val.data.index == id; });
+
 		    if(row->data.note != value.note || row->data.title != value.title)
             {
                 row->status = Core::_status_::CHANGE;
                 row->data = std::move(value);
+				
 
-                this->_pages.pop();
-                auto& prev = this->_pages.top();
-                last.window = prev.window;
-                std::swap(last, prev);
-                this->_pages.push(Core::_buffer_());
-
-				this->update_window_buffer(prev.window, prev);
+				this->update_window_buffer(last->window, *last);
             }
+
+			this->_pages.emplace();
 		}
 		break;
 
@@ -299,12 +300,18 @@ void Core::event(std::string_view id, Event type, std::size_t index, WindowType 
 
 			if(window == WindowType::EDIT)
             {
-                this->_pages.push(*pBuffer);
+				Core::_buffer_ buffer;
+				buffer.window = pBuffer->window;
+				buffer._id = pBuffer->_id;
+				buffer._data.push_back(row);
+                this->_pages.push(buffer);
             }
 			else
 			{
 				if(!this->buffer_empty(*pBuffer))
 				{
+					auto weakPointer = this->_manager->get_window(pBuffer->window);
+					auto windowPointer = weakPointer.lock();
 					windowPointer->set_status_message("Changes not saved");
 					return;
 				}

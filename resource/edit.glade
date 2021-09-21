@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkImage" id="Save">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="pixbuf">image/16px/back.png</property>
+  </object>
+  <object class="GtkWindow" id="EditWindow">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">3</property>
+        <property name="margin-end">3</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkLabel" id="StatusBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="EditWindowBodyTitle">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">2</property>
+            <property name="margin-end">2</property>
+            <property name="max-length">30</property>
+            <property name="show-emoji-icon">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="EditWindowBodyView">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="margin-start">2</property>
+            <property name="margin-end">2</property>
+            <property name="pixels-above-lines">5</property>
+            <property name="pixels-below-lines">5</property>
+            <property name="wrap-mode">char</property>
+            <property name="indent">10</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">2</property>
+            <property name="margin-end">2</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="SaveNoteButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">Save</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

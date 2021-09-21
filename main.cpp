@@ -20,30 +20,30 @@ int main()
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
 	Window* gtkListWindowPointer = nullptr;
-    builder->add_from_file("./resource/change.glade");
+    builder->add_from_file("./resource/main.glade");
     builder->get_widget_derived("mainWindow", gtkListWindowPointer);
-	gtkListWindowPointer->set_size(400);
+	gtkListWindowPointer->set_size(500, 400);
 	gtkListWindowPointer->set_name("list");
 	gtkListWindowPointer->set_dispatcher(dispatcher);
-	gtkListWindowPointer->set_style("./resource/style/entry_border.css");
+	gtkListWindowPointer->set_style("./resource/style/main.css");
 	gtkListWindowPointer->app(app);
 
 	MainWindow* gtkMainWindowPointer = nullptr;
-	builder->add_from_file("./resource/change.glade");
+	builder->add_from_file("./resource/main.glade");
 	builder->get_widget_derived("mainWindow", gtkMainWindowPointer);
-	gtkMainWindowPointer->set_size(400);
+	gtkMainWindowPointer->set_size(500, 400);
 	gtkMainWindowPointer->set_name("main");
 	gtkMainWindowPointer->set_dispatcher(dispatcher);
-	gtkMainWindowPointer->set_style("./resource/style/entry_border.css");
+	gtkMainWindowPointer->set_style("./resource/style/main.css");
     gtkMainWindowPointer->app(app);
 
 	EditWindow* gtkEditWindowPointer = nullptr;
-	builder->add_from_file("./resource/change.glade");
+	builder->add_from_file("./resource/edit.glade");
 	builder->get_widget_derived("EditWindow", gtkEditWindowPointer);
-	gtkEditWindowPointer->set_size(400, 400);
+	gtkEditWindowPointer->set_size(500, 400);
 	gtkEditWindowPointer->set_name("edit");
 	gtkEditWindowPointer->set_dispatcher(dispatcher);
-	gtkEditWindowPointer->set_style("./resource/style/entry_border.css");
+	gtkEditWindowPointer->set_style("./resource/style/edit.css");
     gtkEditWindowPointer->app(app);
 
 	std::shared_ptr<Window> gtkListWindow(gtkListWindowPointer);

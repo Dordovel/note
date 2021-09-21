@@ -1,0 +1,46 @@
+window
+{
+	background-color: white;
+}
+
+list
+{
+	background-color: lightgray;
+}
+
+row
+{
+	background-color: white;
+	border-image-source: linear-gradient(to left, blue, #d53a9d);
+	border-top: 1px solid;
+	border-left: 1px solid;
+	border-right: 1px solid;
+	border-image-slice: 1;
+}
+
+row:last-child
+{
+	border-bottom: 1px solid;
+}
+
+label
+{
+    color: red;
+}
+
+button
+{
+	border: 1px solid;
+}
+
+.odd
+{
+	background-color: lightblue;
+}
+
+#NotesLabel
+{
+	color: black;
+	font-size: 16px;
+	font-weight: bold;
+}

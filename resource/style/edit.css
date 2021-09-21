@@ -1,0 +1,25 @@
+entry
+{
+    border: 1px solid black;
+    font-size: 14px;
+}
+
+entry:focus
+{
+    border: 1px solid blue;
+    font-size: 16px;
+	color: blue;
+}
+
+text
+{
+    border: 1px solid black;
+	font-size: 14px;
+}
+
+text:focus
+{
+    border: 1px solid blue;
+	color: blue;
+	font-size: 14px;
+}
