@@ -33,9 +33,18 @@ button
 	border: 1px solid;
 }
 
-row:nth-child(odd)
+.odd
 {
 	background-color: lightblue;
+}
+
+.even
+{
+}
+
+.active
+{
+	background-color: orange;
 }
 
 #NotesLabel

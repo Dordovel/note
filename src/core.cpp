@@ -173,21 +173,15 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
     {
 		case Event::ACTIVATE:
 		{
-			if(!row.data.status)
-			{
-				row.status = Core::_status_::CHANGE;
-				row.data.status = true;
-			}
+			row.status = Core::_status_::CHANGE;
+			row.data.status = true;
 		}
 		break;
 
         case Event::DEACTIVATE:
 		{
-			if(row.data.status)
-			{
-				row.status = Core::_status_::CHANGE;
-				row.data.status = false;
-			}
+			row.status = Core::_status_::CHANGE;
+			row.data.status = false;
 		}
 		break;
 
