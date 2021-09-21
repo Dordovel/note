@@ -204,13 +204,10 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
     Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
     row->property_activatable() = false;
     row->property_selectable() = false;
-
 	auto rowStyleContext = row->get_style_context();
-
 	if(0 != (newRowIndex %2)) rowStyleContext->add_class("oddListRow");
 	else rowStyleContext->add_class("evenListRow");
-
-	if(value.status) row->get_style_context()->add_class("activeListRow");
+	if(value.status) rowStyleContext->add_class("activeListRow");
 
     Gtk::CheckButton* check = Gtk::manage(new Gtk::CheckButton);
     check->property_active() = value.status;
