@@ -51,9 +51,9 @@ int main()
 	std::shared_ptr<MainWindow> gtkMainWindow(gtkMainWindowPointer);
 
 	std::unique_ptr<WindowManager> manager = std::make_unique<WindowManager>();
-	manager->register_window(gtkListWindow->get_window_id(), WindowType::LIST, std::move(gtkListWindow));
-	manager->register_window(gtkEditWindow->get_window_id(), WindowType::EDIT, std::move(gtkEditWindow));
-	manager->register_window(gtkMainWindow->get_window_id(), WindowType::MAIN, std::move(gtkMainWindow));
+	manager->register_window(gtkListWindowPointer->get_window_id(), WindowType::LIST, std::move(gtkListWindow));
+	manager->register_window(gtkEditWindowPointer->get_window_id(), WindowType::EDIT, std::move(gtkEditWindow));
+	manager->register_window(gtkMainWindowPointer->get_window_id(), WindowType::MAIN, std::move(gtkMainWindow));
 
 	core->register_manager(std::move(manager));
 
