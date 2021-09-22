@@ -8,15 +8,15 @@ class MainWindow : public Window
     private:
         std::shared_ptr<IDispatcher> _dispatcher;
         Glib::RefPtr<Gdk::Pixbuf> _openIcon;
-        class Gtk::Grid* create_tool_buttons(Gtk::ListBoxRow* row) override;
+        class Gtk::Grid* create_tool_buttons(size_t rowIndex) override;
 
-		void button_open_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept;
+		void button_open_click(std::size_t rowIndex) noexcept;
 
 	public:
 		MainWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade);
 
-		void set_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept
+		void set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept
 			override;
 
 		~MainWindow() = default;

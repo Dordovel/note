@@ -13,9 +13,9 @@ MainWindow::MainWindow(BaseObjectType* cobject,
     this->_openIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/settings-button.png");
 }
 
-Gtk::Grid* MainWindow::create_tool_buttons(Gtk::ListBoxRow* row)
+Gtk::Grid* MainWindow::create_tool_buttons(size_t rowIndex)
 {
-    Gtk::Grid* grid = Window::create_tool_buttons(row);
+    Gtk::Grid* grid = Window::create_tool_buttons(rowIndex);
 
     Gtk::Image* openImage = Gtk::manage(new Gtk::Image(this->_openIcon));
 
@@ -23,7 +23,7 @@ Gtk::Grid* MainWindow::create_tool_buttons(Gtk::ListBoxRow* row)
     buttonOpen->set_image_position(Gtk::POS_LEFT);
     buttonOpen->set_name("NotesButtonOpen");
     buttonOpen->set_image(*openImage);
-    auto button_open_handle = [this, row=row, buttonOpen=buttonOpen](){this->button_open_click(buttonOpen, row);};
+    auto button_open_handle = [this, index=rowIndex](){this->button_open_click(index);};
     buttonOpen->signal_pressed().connect(button_open_handle);
 
     grid->insert_column(0);
@@ -32,13 +32,13 @@ Gtk::Grid* MainWindow::create_tool_buttons(Gtk::ListBoxRow* row)
     return grid;
 }
 
-void MainWindow::button_open_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
+void MainWindow::button_open_click(std::size_t rowIndex) noexcept
 {
-    this->_dispatcher->handler()->event(this->get_name(), Event::OPEN, row->get_index(), WindowType::LIST);
+    this->_dispatcher->handler()->event(this->get_window_id(), Event::OPEN, rowIndex, WindowType::LIST);
 }
 
-void MainWindow::set_dispatcher(std::shared_ptr <IDispatcher> dispatcher) noexcept
+void MainWindow::set_event_dispatcher(std::shared_ptr <IDispatcher> dispatcher) noexcept
 {
-    Window::set_dispatcher(dispatcher);
+    Window::set_event_dispatcher(dispatcher);
     this->_dispatcher = std::move(dispatcher);
 }

@@ -2,10 +2,11 @@
 
 #include "../data.h"
 #include "../window_types.hpp"
-#include "gtkmm/alignment.h"
 #include "gtkmm/enums.h"
+#include "gtkmm/listboxrow.h"
 
 #include <algorithm>
+#include <iostream>
 
 #include <cstddef>
 #include <gtkmm-3.0/gtkmm/box.h>
@@ -18,7 +19,7 @@
 
 namespace
 {
-	void remove_row(Gtk::ListBox* list, Gtk::ListBoxRow* row) noexcept
+	void remove_row_from_listbox(Gtk::ListBox* list, Gtk::ListBoxRow* row) noexcept
 	{
 		list->remove(*row);
 	}
@@ -36,10 +37,10 @@ Window::Window(BaseObjectType* cobject,
 {
     m_refGlade->get_widget("ListBox", this->_listBox);
 	m_refGlade->get_widget("AddNewItemButton", this->_addNewItemButton);
-	this->_addNewItemButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_add_new_item));
+	this->_addNewItemButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_add_new_item_to_listbox_signal));
 
 	m_refGlade->get_widget("SaveNoteButton", this->_saveNoteButton);
-	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_note));
+	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::button_save_listbox_changes_signal));
 
     this->_editIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/edit-button.png");
     this->_deleteIcon = Gdk::Pixbuf::create_from_file("./resource/image/16px/remove-file.png");
@@ -55,26 +56,26 @@ Window::Window(BaseObjectType* cobject,
 
 void Window::signal_show() noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), Event::SHOW);
+	this->_eventDispatcher->handler()->event(this->get_window_id(), Event::SHOW);
 }
 
 bool Window::signal_hide(GdkEventAny* event) noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), Event::HIDE);
+	this->_eventDispatcher->handler()->event(this->get_window_id(), Event::HIDE);
 	return true;
 }
 
-void Window::app(Glib::RefPtr<Gtk::Application> app) noexcept
+void Window::set_application_ref(Glib::RefPtr<Gtk::Application> app) noexcept
 {
     this->_app = app;
 }
 
-void Window::set_size(int width, int height) noexcept
+void Window::set_window_size(int width, int height) noexcept
 {
     Gtk::Window::set_default_size(width, height);
 }
 
-void Window::set_style(std::string_view path) noexcept
+void Window::set_window_css_file_path(std::string_view path) noexcept
 {
     auto cssProvider = Gtk::CssProvider::create();
     cssProvider->load_from_path(path.data());
@@ -87,20 +88,20 @@ auto find_widget(const std::vector<Gtk::Widget*>& array, std::string_view id)
 	return std::find_if(std::begin(array), std::end(array), [&id] (auto var){return var->get_name() == id.data();});
 }
 
-void Window::show()
+void Window::open_window()
 {
     this->_app->add_window(*this);
 	Gtk::Window::show();
 }
 
-void Window::hide() 
+void Window::close_window()
 {
 	clear_list(this->_listBox);
     this->_app->remove_window(*this);
 	Gtk::Window::hide();
 }
 
-void Window::clear() noexcept
+void Window::clear_window() noexcept
 {
 	clear_list(this->_listBox);
 }
@@ -110,12 +111,12 @@ void Window::modal(bool flag) noexcept
 	Gtk::Window::set_modal(flag);
 }
 
-void Window::set_title(std::string_view title) noexcept 
+void Window::set_window_title(std::string_view title) noexcept
 {
 	Gtk::Window::set_title(title.data());
 }
 
-std::string Window::get_title() const noexcept 
+std::string Window::get_window_title() const noexcept
 {
 	return Gtk::Window::get_title();
 }
@@ -125,74 +126,65 @@ void Window::set_status_message(std::string_view status) noexcept
 	if(this->statusBar) this->statusBar->set_text(status.data());
 }
 
-void Window::set_name(std::string_view name) noexcept 
+void Window::set_window_id(std::string_view name) noexcept
 {
 	Gtk::Window::set_name(name.data());
 }
 
-std::string Window::get_name() const noexcept 
+std::string Window::get_window_id() const noexcept
 {
 	return Gtk::Window::get_name();
 }
 
-void Window::set_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept
+void Window::set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept
 {
-	this->_dispatcher = std::move(dispatcher);
+	this->_eventDispatcher = std::move(dispather);
 }
 
-void Window::button_add_new_item() noexcept
+void Window::button_add_new_item_to_listbox_signal() noexcept
 {
-	this->_dispatcher->handler()->event(this->get_name(), Event::INSERT);
+	this->_eventDispatcher->handler()->event(this->get_window_id(), Event::INSERT);
 }
 
-void Window::button_save_note() noexcept
+void Window::button_save_listbox_changes_signal() noexcept
 {
-    this->_dispatcher->handler()->event(this->get_name(), Event::SAVE);
+    this->_eventDispatcher->handler()->event(this->get_window_id(), Event::SAVE);
 }
 
-void Window::button_edit_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
+void Window::row_button_edit_click_signal(std::size_t rowIndex) noexcept
 {
-    if(!row) return;
-
-    this->_dispatcher->handler()->event(this->get_name(), Event::OPEN, row->get_index(), WindowType::EDIT);
+    this->_eventDispatcher->handler()->event(this->get_window_id(), Event::OPEN, rowIndex, WindowType::EDIT);
 }
 
-void Window::button_delete_click(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
+void Window::row_button_delete_click_signal(std::size_t rowIndex) noexcept
 {
-    if(!row) return;
-
-	this->_dispatcher->handler()->event(this->get_name(), Event::DELETE, row->get_index());
-
-	remove_row(this->_listBox, row);
+	this->_eventDispatcher->handler()->event(this->get_window_id(), Event::DELETE, rowIndex);
+	auto removedRow = this->_listBox->get_row_at_index(rowIndex);
+    remove_row_from_listbox(this->_listBox, removedRow);
 }
 
-void Window::toggle_check(Gtk::Button* button, Gtk::ListBoxRow* row) noexcept
+void Window::row_checkbutton_click_signal(Gtk::CheckButton* button) noexcept
 {
-    if(!row) return;
+	Gtk::ListBoxRow* checkButtonRow = (Gtk::ListBoxRow*)(button->get_parent()->get_parent());
+	if(button->get_active())
+	{
+		checkButtonRow->get_style_context()->remove_class("activeListRow");
+		this->_eventDispatcher->handler()->event(this->get_window_id(), Event::DEACTIVATE, checkButtonRow->get_index());
+	}
+	else
+	{
+		checkButtonRow->get_style_context()->add_class("activeListRow");
+		this->_eventDispatcher->handler()->event(this->get_window_id(), Event::ACTIVATE, checkButtonRow->get_index());
+	}
+}
 
-    std::vector<Gtk::Widget*>  widgets = row->get_children();
+Gtk::CheckButton* create_row_check(bool status)
+{
+    Gtk::CheckButton* checkButton = Gtk::manage(new Gtk::CheckButton);
+    checkButton->property_active() = status;
+    checkButton->set_name("NotesActive");
 
-    Gtk::Box* box = dynamic_cast<Gtk::Box*>(widgets.at(0));
-
-    if(!box) return;
-
-    widgets = box->get_children();
-
-    auto value = find_widget(widgets, "NotesActive");
-    if(value != std::end(widgets))
-    {
-        Gtk::CheckButton* active = static_cast<Gtk::CheckButton*>(*value);
-        if(active->get_active())
-		{
-			row->get_style_context()->remove_class("activeListRow");
-            this->_dispatcher->handler()->event(this->get_name(), Event::DEACTIVATE, row->get_index());
-		}
-        else
-		{
-			row->get_style_context()->add_class("activeListRow");
-            this->_dispatcher->handler()->event(this->get_name(), Event::ACTIVATE, row->get_index());
-		}
-    }
+	return checkButton;
 }
 
 Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
@@ -200,45 +192,43 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 	auto rowCount = this->_listBox->get_children().size();
 	auto newRowIndex = rowCount + 1;
 
-	Gtk::Label* index = Gtk::manage(new Gtk::Label);
-	index->set_text(std::to_string(newRowIndex) + std::string("."));
+	Gtk::Label* newItemRowIndexLabel = Gtk::manage(new Gtk::Label);
+	newItemRowIndexLabel->set_text(std::to_string(newRowIndex) + std::string("."));
+
+    Gtk::Label* newItemRowTitleLabel = Gtk::manage(new Gtk::Label);
+    newItemRowTitleLabel->set_text(value.title);
+	newItemRowTitleLabel->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
+    newItemRowTitleLabel->set_name("NotesLabel");
+    newItemRowTitleLabel->set_halign(Gtk::Align::ALIGN_FILL);
+	
+	Gtk::CheckButton* newRowItemCheckButton = create_row_check(value.status);
+    auto toggle_handle = [this, button=newRowItemCheckButton](){ this->row_checkbutton_click_signal(button);};
+    newRowItemCheckButton->signal_pressed().connect(toggle_handle);
+
+    Gtk::Box* box = Gtk::manage(new Gtk::Box());
+    box->pack_start(*newItemRowIndexLabel, false, false, 12);
+    box->pack_start(*newRowItemCheckButton, false, false, 12);
+    box->pack_start(*newItemRowTitleLabel, true, true, 10);
 
     Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
     row->property_activatable() = false;
     row->property_selectable() = false;
-	auto rowStyleContext = row->get_style_context();
-	if(0 != (newRowIndex %2)) rowStyleContext->add_class("oddListRow");
-	else rowStyleContext->add_class("evenListRow");
-	if(value.status) rowStyleContext->add_class("activeListRow");
+    auto rowStyleContext = row->get_style_context();
+    if(0 != (newRowIndex %2)) rowStyleContext->add_class("oddListRow");
+    else rowStyleContext->add_class("evenListRow");
+    if(value.status) rowStyleContext->add_class("activeListRow");
 
-    Gtk::CheckButton* check = Gtk::manage(new Gtk::CheckButton);
-    check->property_active() = value.status;
-    check->set_name("NotesActive");
-    auto toggle_handle = [this, row=row, check=check](){this->toggle_check(check, row);};
-    check->signal_pressed().connect(toggle_handle);
+    Gtk::Grid* toolsButtonGrid = this->create_tool_buttons(rowCount);
+	toolsButtonGrid->set_column_spacing(5);
 
-    Gtk::Label* label = Gtk::manage(new Gtk::Label);
-    label->set_text(value.title);
-	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
-    label->set_name("NotesLabel");
-    label->set_halign(Gtk::Align::ALIGN_FILL);
-
-    Gtk::Box* box = Gtk::manage(new Gtk::Box());
-    box->pack_start(*index, false, false, 12);
-    box->pack_start(*check, false, false, 12);
-    box->pack_start(*label, true, true, 10);
-
-    Gtk::Grid* buttons = this->create_tool_buttons(row);
-	buttons->set_column_spacing(5);
-
-    box->pack_start(*buttons, false, false, 5);
+    box->pack_start(*toolsButtonGrid, false, false, 5);
 
     row->add(*box);
 
     return row;
 }
 
-void Window::show_data(const Data& value) noexcept
+void Window::show_data_in_window(const Data& value) noexcept
 {
     this->_listBox->append(*this->create_new_row(value));
     this->_listBox->show_all_children();
@@ -246,7 +236,7 @@ void Window::show_data(const Data& value) noexcept
 	vAdjustment->set_value(vAdjustment->get_upper());
 }
 
-Gtk::Grid* Window::create_tool_buttons(Gtk::ListBoxRow* row)
+Gtk::Grid* Window::create_tool_buttons(size_t rowIndex)
 {
     Gtk::Image* editImage = Gtk::manage(new Gtk::Image(this->_editIcon));
     Gtk::Image* deleteImage = Gtk::manage(new Gtk::Image(this->_deleteIcon));
@@ -257,14 +247,14 @@ Gtk::Grid* Window::create_tool_buttons(Gtk::ListBoxRow* row)
     buttonEdit->set_image_position(Gtk::POS_LEFT);
     buttonEdit->set_name("NotesButtonEdit");
     buttonEdit->set_image(*editImage);
-    auto button_edit_handle = [this, row=row, buttonEdit=buttonEdit](){this->button_edit_click(buttonEdit, row);};
+    auto button_edit_handle = [this, index = rowIndex](){ this->row_button_edit_click_signal(index);};
     buttonEdit->signal_pressed().connect(button_edit_handle);
 
     Gtk::Button* buttonDelete = Gtk::manage(new Gtk::Button());
     buttonDelete->set_image_position(Gtk::POS_LEFT);
     buttonDelete->set_name("NotesButtonDelete");
     buttonDelete->set_image(*deleteImage);
-    auto button_delete_handle = [this, row=row, buttonDelete=buttonDelete](){this->button_delete_click(buttonDelete, row);};
+    auto button_delete_handle = [this, index = rowIndex](){ this->row_button_delete_click_signal(index);};
     buttonDelete->signal_pressed().connect(button_delete_handle);
 
     grid->add(*buttonEdit);

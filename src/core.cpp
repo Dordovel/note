@@ -150,10 +150,10 @@ void Core::update_window_buffer(std::string_view window, const Core::_buffer_& b
 
 void Core::update_window_buffer(IWindow* window, const Core::_buffer_& buffer) noexcept
 {
-    window->clear();
+    window->clear_window();
 
 	for(const auto& val : buffer._data)
-		window->show_data(val.data);
+        window->show_data_in_window(val.data);
 }
 
 void Core::register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept 
@@ -219,9 +219,8 @@ void Core::event(std::string_view id, Event type) noexcept
                 window->set_status_message("Changes not saved");
                 break;
             }
-
             this->_pages.pop();
-            window->hide();
+            window->close_window();
         }
         break;
 
@@ -241,7 +240,7 @@ void Core::event(std::string_view id, Event type) noexcept
 			Core::_buffer_* pBuffer = this->current_buffer();
 			pBuffer->_data.emplace_back(val);
 
-			window->show_data(val.data);
+            window->show_data_in_window(val.data);
 		}
 		break;
 
@@ -251,7 +250,6 @@ void Core::event(std::string_view id, Event type) noexcept
 
 void Core::event(std::string_view id, Event type, struct Data value) noexcept
 {
-
     switch(type)
     {
 		case Event::CHANGE:
@@ -267,7 +265,6 @@ void Core::event(std::string_view id, Event type, struct Data value) noexcept
                 row->status = Core::_status_::CHANGE;
                 row->data = std::move(value);
 				
-
 				this->update_window_buffer(last->window, *last);
             }
 
@@ -314,8 +311,8 @@ void Core::event(std::string_view id, Event type, std::size_t index, WindowType 
 			}
 
 			windowPointer->modal(true);
-			windowPointer->set_title(row.data.title);
-			windowPointer->show();
+            windowPointer->set_window_title(row.data.title);
+            windowPointer->open_window();
 		}
 		break;
 
