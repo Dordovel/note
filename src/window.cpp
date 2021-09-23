@@ -200,6 +200,8 @@ Gtk::ListBoxRow* Window::create_new_row(const Data& value) noexcept
 	newItemRowTitleLabel->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
     newItemRowTitleLabel->set_name("NotesLabel");
     newItemRowTitleLabel->set_halign(Gtk::Align::ALIGN_FILL);
+    newItemRowTitleLabel->set_has_tooltip();
+    newItemRowTitleLabel->set_tooltip_text(value.note);
 	
 	Gtk::CheckButton* newRowItemCheckButton = create_row_check(value.status);
     auto toggle_handle = [this, button=newRowItemCheckButton](){ this->row_checkbutton_click_signal(button);};
