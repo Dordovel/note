@@ -32,7 +32,7 @@ bool EditWindow::signal_hide(GdkEventAny* event) noexcept
 	return true;
 }
 
-void EditWindow::app(Glib::RefPtr<Gtk::Application> app) noexcept
+void EditWindow::set_application_ref(Glib::RefPtr<Gtk::Application> app) noexcept
 {
     this->_app = app;
 }
@@ -98,7 +98,7 @@ std::string EditWindow::get_window_id() const noexcept
 	return Gtk::Window::get_name();
 }
 
-void EditWindow::set_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept
+void EditWindow::set_event_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept
 {
 	this->_dispatcher = std::move(dispatcher);
 }

@@ -42,9 +42,9 @@ int main()
 	builder->get_widget_derived("EditWindow", gtkEditWindowPointer);
     gtkEditWindowPointer->set_window_size(500, 400);
     gtkEditWindowPointer->set_window_id("edit");
-	gtkEditWindowPointer->set_dispatcher(dispatcher);
+	gtkEditWindowPointer->set_event_dispatcher(dispatcher);
     gtkEditWindowPointer->set_window_css_file_path("./resource/style/edit.css");
-    gtkEditWindowPointer->app(app);
+    gtkEditWindowPointer->set_application_ref(app);
 
 	std::shared_ptr<Window> gtkListWindow(gtkListWindowPointer);
 	std::shared_ptr<EditWindow> gtkEditWindow(gtkEditWindowPointer);

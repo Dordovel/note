@@ -46,7 +46,7 @@ class EditWindow : public Gtk::Window, public IWindow
 
 		void modal(bool flag) noexcept override;
 
-		void app(Glib::RefPtr<Gtk::Application> app) noexcept;
+		void set_application_ref(Glib::RefPtr<Gtk::Application> app) noexcept;
 
 		void set_window_title(std::string_view title) noexcept override;
 		std::string get_window_title() const noexcept override;
@@ -56,7 +56,7 @@ class EditWindow : public Gtk::Window, public IWindow
 		void set_window_id(std::string_view name) noexcept override;
 		std::string get_window_id() const noexcept override;
 
-        virtual void set_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept;
+        virtual void set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept;
 
 		void show_data_in_window(const Data& value) noexcept override;
 
