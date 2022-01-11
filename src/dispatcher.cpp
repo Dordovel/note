@@ -1,7 +1,7 @@
 #include "../header/dispatcher.h"
 
 
-void Dispatcher::set_handle(const std::shared_ptr<IEvent>& handle) noexcept
+void Dispatcher::set_handler(const std::shared_ptr<IEvent>& handle) noexcept
 {
 	this->_eventHandler = handle;
 }

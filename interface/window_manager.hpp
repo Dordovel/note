@@ -18,8 +18,8 @@ class IWindowRegister
 class IWindowRegisterGet
 {
 	public:
-		virtual std::weak_ptr<IWindow> get_window(WindowType type) noexcept = 0;
-		virtual std::weak_ptr<IWindow> get_window(std::string_view id) noexcept = 0;
+		virtual std::weak_ptr<IWindow> window(WindowType type) noexcept = 0;
+		virtual std::weak_ptr<IWindow> window(std::string_view id) noexcept = 0;
 
 		virtual ~IWindowRegisterGet() = default;
 };

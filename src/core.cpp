@@ -61,7 +61,7 @@ Core::_data_ Core::create_empty_element() noexcept
 	}
 
 	Core::_data_ _data;
-	_data.status = Core::_status_::CHANGE;
+	_data.status = Core::_status_::NONE;
 	_data.created = Core::_created_::NEW;
 	_data.data.index = index;
 
@@ -118,7 +118,7 @@ Core::_buffer_ Core::save_buffer(Core::_buffer_ buffer) const noexcept
 	return buffer;
 }
 
-bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
+bool Core::is_empty(const Core::_buffer_& buffer) const noexcept
 {
 	auto begin = buffer._data.begin();
 	auto end = buffer._data.end();
@@ -141,19 +141,20 @@ bool Core::buffer_empty(const Core::_buffer_& buffer) const noexcept
 	return true;
 }
 
-void Core::update_window_buffer(std::string_view window, const Core::_buffer_& buffer) noexcept
+void Core::update_window(std::string_view window, const Core::_buffer_& buffer) noexcept
 {
-    auto weakPointer = this->_manager->get_window(window);
+    auto weakPointer = this->_manager->window(window);
     auto windowPointer = weakPointer.lock();
-    if(windowPointer) this->update_window_buffer(&(*windowPointer), buffer);
+    if(windowPointer)
+		this->update_window(&( *windowPointer ), buffer);
 }
 
-void Core::update_window_buffer(IWindow* window, const Core::_buffer_& buffer) noexcept
+void Core::update_window(IWindow* window, const Core::_buffer_& buffer) noexcept
 {
-    window->clear_window();
+	window->clear();
 
 	for(const auto& val : buffer._data)
-        window->show_data_in_window(val.data);
+		window->print(val.data);
 }
 
 void Core::register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept 
@@ -197,7 +198,7 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
 
 void Core::event(std::string_view id, Event type) noexcept 
 {
-	auto weakPointer = this->_manager->get_window(id);
+	auto weakPointer = this->_manager->window(id);
 	auto window = weakPointer.lock();
 	if(!window) return;
 
@@ -214,13 +215,13 @@ void Core::event(std::string_view id, Event type) noexcept
 
         case Event::HIDE:
         {
-            if(!this->buffer_empty(*pBuffer))
+            if(!this->is_empty(*pBuffer))
             {
-                window->set_status_message("Changes not saved");
+				window->set_info_message("Changes not saved");
                 break;
             }
             this->_pages.pop();
-            window->close_window();
+			window->close();
         }
         break;
 
@@ -230,7 +231,7 @@ void Core::event(std::string_view id, Event type) noexcept
 			Core::_buffer_* const pBuffer = this->current_buffer();
 			pBuffer->window = id;
 
-			this->update_window_buffer(window.get(), *pBuffer);
+			this->update_window(window.get(), *pBuffer);
 		}
 		break;
 
@@ -240,7 +241,7 @@ void Core::event(std::string_view id, Event type) noexcept
 			Core::_buffer_* pBuffer = this->current_buffer();
 			pBuffer->_data.emplace_back(val);
 
-            window->show_data_in_window(val.data);
+			window->print(val.data);
 		}
 		break;
 
@@ -264,8 +265,8 @@ void Core::event(std::string_view id, Event type, struct Data value) noexcept
             {
                 row->status = Core::_status_::CHANGE;
                 row->data = std::move(value);
-				
-				this->update_window_buffer(last->window, *last);
+
+				this->update_window(last->window, *last);
             }
 
 			this->_pages.emplace();
@@ -285,7 +286,7 @@ void Core::event(std::string_view id, Event type, std::size_t index, WindowType 
     {
 		case Event::OPEN:
 		{
-			auto weakPointer = this->_manager->get_window(window);
+			auto weakPointer = this->_manager->window(window);
 			auto windowPointer = weakPointer.lock();
 			if(!windowPointer) return;
 
@@ -299,11 +300,11 @@ void Core::event(std::string_view id, Event type, std::size_t index, WindowType 
             }
 			else
 			{
-				if(!this->buffer_empty(*pBuffer))
+				if(!this->is_empty(*pBuffer))
 				{
-					auto weakPointer = this->_manager->get_window(pBuffer->window);
+					auto weakPointer = this->_manager->window(pBuffer->window);
 					auto windowPointer = weakPointer.lock();
-					windowPointer->set_status_message("Changes not saved");
+					windowPointer->set_info_message("Changes not saved");
 					return;
 				}
 
@@ -311,8 +312,8 @@ void Core::event(std::string_view id, Event type, std::size_t index, WindowType 
 			}
 
 			windowPointer->modal(true);
-            windowPointer->set_window_title(row.data.title);
-            windowPointer->open_window();
+			windowPointer->set_title(row.data.title);
+			windowPointer->open();
 		}
 		break;
 

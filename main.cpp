@@ -15,35 +15,35 @@ int main()
 	std::shared_ptr<Core> core = std::make_shared<Core>(database);
 
 	std::shared_ptr<Dispatcher> dispatcher = std::make_shared<Dispatcher>();
-	dispatcher->set_handle(core);
+	dispatcher->set_handler(core);
 
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();
 
 	Window* gtkListWindowPointer = nullptr;
     builder->add_from_file("./resource/main.glade");
     builder->get_widget_derived("mainWindow", gtkListWindowPointer);
-    gtkListWindowPointer->set_window_size(500, 400);
-    gtkListWindowPointer->set_window_id("list");
+	gtkListWindowPointer->set_size(500, 400);
+	gtkListWindowPointer->set_id("list");
     gtkListWindowPointer->set_event_dispatcher(dispatcher);
-    gtkListWindowPointer->set_window_css_file_path("./resource/style/main.css");
+	gtkListWindowPointer->set_path_to_css_file("./resource/style/main.css");
     gtkListWindowPointer->set_application_ref(app);
 
 	MainWindow* gtkMainWindowPointer = nullptr;
 	builder->add_from_file("./resource/main.glade");
 	builder->get_widget_derived("mainWindow", gtkMainWindowPointer);
-    gtkMainWindowPointer->set_window_size(500, 400);
-    gtkMainWindowPointer->set_window_id("main");
+	gtkMainWindowPointer->set_size(500, 400);
+	gtkMainWindowPointer->set_id("main");
     gtkMainWindowPointer->set_event_dispatcher(dispatcher);
-    gtkMainWindowPointer->set_window_css_file_path("./resource/style/main.css");
+	gtkMainWindowPointer->set_path_to_css_file("./resource/style/main.css");
     gtkMainWindowPointer->set_application_ref(app);
 
 	EditWindow* gtkEditWindowPointer = nullptr;
 	builder->add_from_file("./resource/edit.glade");
 	builder->get_widget_derived("EditWindow", gtkEditWindowPointer);
-    gtkEditWindowPointer->set_window_size(500, 400);
-    gtkEditWindowPointer->set_window_id("edit");
+	gtkEditWindowPointer->set_size(500, 400);
+	gtkEditWindowPointer->set_id("edit");
 	gtkEditWindowPointer->set_event_dispatcher(dispatcher);
-    gtkEditWindowPointer->set_window_css_file_path("./resource/style/edit.css");
+	gtkEditWindowPointer->set_path_to_css_file("./resource/style/edit.css");
     gtkEditWindowPointer->set_application_ref(app);
 
 	std::shared_ptr<Window> gtkListWindow(gtkListWindowPointer);
@@ -51,9 +51,9 @@ int main()
 	std::shared_ptr<MainWindow> gtkMainWindow(gtkMainWindowPointer);
 
 	std::unique_ptr<WindowManager> manager = std::make_unique<WindowManager>();
-	manager->register_window(gtkListWindowPointer->get_window_id(), WindowType::LIST, std::move(gtkListWindow));
-	manager->register_window(gtkEditWindowPointer->get_window_id(), WindowType::EDIT, std::move(gtkEditWindow));
-	manager->register_window(gtkMainWindowPointer->get_window_id(), WindowType::MAIN, std::move(gtkMainWindow));
+	manager->register_window(gtkListWindowPointer->id(), WindowType::LIST, std::move(gtkListWindow));
+	manager->register_window(gtkEditWindowPointer->id(), WindowType::EDIT, std::move(gtkEditWindow));
+	manager->register_window(gtkMainWindowPointer->id(), WindowType::MAIN, std::move(gtkMainWindow));
 
 	core->register_manager(std::move(manager));
 

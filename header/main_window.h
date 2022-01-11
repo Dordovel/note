@@ -7,10 +7,10 @@ class MainWindow : public Window
 {
     private:
         std::shared_ptr<IDispatcher> _dispatcher;
-        Glib::RefPtr<Gdk::Pixbuf> _openIcon;
-        class Gtk::Grid* create_tool_buttons(size_t rowIndex) override;
+        Glib::RefPtr<Gdk::Pixbuf> _open_icon;
+        class Gtk::Grid* tool_buttons(size_t rowIndex) override;
 
-		void button_open_click(std::size_t rowIndex) noexcept;
+		void signal_open_button_click(std::size_t rowIndex) noexcept;
 
 	public:
 		MainWindow(BaseObjectType* cobject, 

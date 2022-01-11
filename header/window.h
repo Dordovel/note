@@ -31,20 +31,20 @@ class Window : public Gtk::Window, public IWindow
 		Gtk::Label* statusBar;
 		Gtk::ScrolledWindow* _scrolledWindow;
 
-        void signal_show() noexcept;
-        bool signal_hide(GdkEventAny* event) noexcept;
+        void signal_show_window() noexcept;
+        bool signal_hide_window(GdkEventAny* event) noexcept;
 
-		void row_button_edit_click_signal(std::size_t rowIndex) noexcept;
-        void row_button_delete_click_signal(std::size_t rowIndex) noexcept;
-        void row_checkbutton_click_signal(Gtk::CheckButton* button) noexcept;
-		void button_add_new_item_to_listbox_signal() noexcept;
-		void button_save_listbox_changes_signal() noexcept;
+		void signal_edit_button_click(std::size_t rowIndex) noexcept;
+        void signal_delete_button_click(std::size_t rowIndex) noexcept;
+        void signal_activate_button_click(Gtk::CheckButton* button) noexcept;
+		void signal_add_button_click() noexcept;
+		void signal_save_button_click() noexcept;
 
-		Gtk::ListBoxRow* create_new_row(const Data& value) noexcept;
+		Gtk::ListBoxRow* create_row(const Data& value) noexcept;
 
 
     protected:
-        virtual class Gtk::Grid* create_tool_buttons(size_t rowIndex);
+        virtual class Gtk::Grid* tool_buttons(size_t rowIndex);
 
 
 	public:
@@ -54,30 +54,30 @@ class Window : public Gtk::Window, public IWindow
 		Window(Window&& window) = default;
 		Window& operator= (Window&& window) = default;
 
-		void open_window() override;
-		void close_window() override;
+		void open() override;
+		void close() override;
 
 		void modal(bool flag) noexcept override;
 
 		void set_application_ref(Glib::RefPtr<Gtk::Application> app) noexcept;
 
-		void set_window_title(std::string_view title) noexcept override;
-		std::string get_window_title() const noexcept override;
+		void set_title(std::string_view title) noexcept override;
+		std::string title() const noexcept override;
 
-		void set_status_message(std::string_view status) noexcept override;
+		void set_info_message(std::string_view status) noexcept override;
 
-		void set_window_id(std::string_view name) noexcept override;
-		std::string get_window_id() const noexcept override;
+		void set_id(std::string_view name) noexcept override;
+		std::string id() const noexcept override;
 
         virtual void set_event_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept;
 
-		void show_data_in_window(const Data& value) noexcept override;
+		void print(const Data& value) noexcept override;
 
-        void set_window_css_file_path(std::string_view path) noexcept override;
+        void set_path_to_css_file(std::string_view path) noexcept override;
 
-        void set_window_size(int width = -1, int height = -1) noexcept override;
+        void set_size(int width = -1, int height = -1) noexcept override;
 
-		void clear_window() noexcept override;
+		void clear() noexcept override;
 
         virtual ~Window() = default;
 

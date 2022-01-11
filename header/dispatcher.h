@@ -9,7 +9,7 @@ class Dispatcher final : public IDispatcher
 		std::shared_ptr<IEvent> _eventHandler;
 
 	public:
-        void set_handle(const std::shared_ptr<IEvent>& handle) noexcept;
+        void set_handler(const std::shared_ptr<IEvent>& handle) noexcept;
 
         const std::shared_ptr<IEvent>& handler() noexcept override;
 };

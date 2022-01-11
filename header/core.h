@@ -47,10 +47,10 @@ class Core final : public ICore
 		Core::_data_ create_empty_element() noexcept;
 
 		_buffer_ save_buffer(_buffer_ buffer) const noexcept;
-		bool buffer_empty(const _buffer_& buffer) const noexcept;
+		bool is_empty(const _buffer_& buffer) const noexcept;
 		_buffer_* current_buffer() noexcept;
-        void update_window_buffer(std::string_view window, const Core::_buffer_& buffer) noexcept;
-		void update_window_buffer(IWindow* window, const Core::_buffer_& buffer) noexcept;
+        void update_window(std::string_view window, const Core::_buffer_& buffer) noexcept;
+		void update_window(IWindow* window, const Core::_buffer_& buffer) noexcept;
 
 		std::unique_ptr<IWindowRegisterGet> _manager;
 		std::stack<_buffer_> _pages;

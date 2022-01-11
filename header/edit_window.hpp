@@ -19,18 +19,18 @@ class EditWindow : public Gtk::Window, public IWindow
 {
 	private:
 		std::shared_ptr<IDispatcher> _dispatcher;
-		Glib::RefPtr<Gtk::CssProvider> _cssEntry;
+		Glib::RefPtr<Gtk::CssProvider> _css_entry;
         Glib::RefPtr<Gtk::Application> _app;
 
-		Gtk::Label* statusBar;
+		Gtk::Label* _status_bar;
 		Gtk::TextView* _view;
 		Gtk::Entry* _title;
 
-		Gtk::Button* _saveNoteButton;
+		Gtk::Button* _save_note_button;
 
-        void signal_show() noexcept;
-        bool signal_hide(GdkEventAny* event) noexcept;
-		void signal_save() noexcept;
+        void signal_show_window() noexcept;
+        bool signal_hide_window(GdkEventAny* event) noexcept;
+		void signal_save_button_click() noexcept;
 
 		Data _buffer;
 
@@ -41,30 +41,30 @@ class EditWindow : public Gtk::Window, public IWindow
 		EditWindow(EditWindow&& window) = default;
 		EditWindow& operator= (EditWindow&& window) = default;
 
-		void open_window() override;
-		void close_window() override;
+		void open() override;
+		void close() override;
 
 		void modal(bool flag) noexcept override;
 
 		void set_application_ref(Glib::RefPtr<Gtk::Application> app) noexcept;
 
-		void set_window_title(std::string_view title) noexcept override;
-		std::string get_window_title() const noexcept override;
+		void set_title(std::string_view title) noexcept override;
+		std::string title() const noexcept override;
 
-		void set_status_message(std::string_view status) noexcept override;
+		void set_info_message(std::string_view status) noexcept override;
 
-		void set_window_id(std::string_view name) noexcept override;
-		std::string get_window_id() const noexcept override;
+		void set_id(std::string_view name) noexcept override;
+		std::string id() const noexcept override;
 
         virtual void set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept;
 
-		void show_data_in_window(const Data& value) noexcept override;
+		void print(const Data& value) noexcept override;
 
-        void set_window_css_file_path(std::string_view path) noexcept override;
+        void set_path_to_css_file(std::string_view path) noexcept override;
 
-        void set_window_size(int width = -1, int height = -1) noexcept override;
+        void set_size(int width = -1, int height = -1) noexcept override;
 
-		void clear_window() noexcept override;
+		void clear() noexcept override;
 };
 
 #endif //EDIT_WINDOW
