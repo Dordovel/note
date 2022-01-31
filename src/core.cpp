@@ -145,8 +145,7 @@ void Core::update_window(std::string_view window, const Core::_buffer_& buffer) 
 {
     auto weakPointer = this->_manager->window(window);
     auto windowPointer = weakPointer.lock();
-    if(windowPointer)
-		this->update_window(&( *windowPointer ), buffer);
+    if(windowPointer) this->update_window(&( *windowPointer ), buffer);
 }
 
 void Core::update_window(IWindow* window, const Core::_buffer_& buffer) noexcept
@@ -154,7 +153,10 @@ void Core::update_window(IWindow* window, const Core::_buffer_& buffer) noexcept
 	window->clear();
 
 	for(const auto& val : buffer._data)
+	{
+		if(val.status == Core::_status_::DELETE) break;
 		window->print(val.data);
+	}
 }
 
 void Core::register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept 
@@ -189,6 +191,12 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
 		case Event::DELETE:
 		{
 			row.status = Core::_status_::DELETE;
+			decltype(pBuffer->_data)::iterator a(&row), b(&row);
+			while((++b) != pBuffer->_data.end())
+			{
+				std::swap(*(a++), *b);
+			}
+			this->update_window(id, *pBuffer);
 		}
 		break;
 

@@ -19,16 +19,10 @@
 
 namespace
 {
-	void remove_row_from_listbox(Gtk::ListBox* list, Gtk::ListBoxRow* row) noexcept
-	{
-		list->remove(*row);
-	}
-
 	void clear_list(Gtk::ListBox* list) noexcept
 	{
 		auto rows = list->get_children();
-		for(auto row : rows)
-			list->remove(*row);
+		for(auto row : rows) list->remove(*row);
 	}
 }
 
@@ -159,8 +153,6 @@ void Window::signal_edit_button_click(std::size_t rowIndex) noexcept
 void Window::signal_delete_button_click(std::size_t rowIndex) noexcept
 {
 	this->_eventDispatcher->handler()->event(this->id(), Event::DELETE, rowIndex);
-	auto removedRow = this->_listBox->get_row_at_index(rowIndex);
-    remove_row_from_listbox(this->_listBox, removedRow);
 }
 
 void Window::signal_activate_button_click(Gtk::CheckButton* button) noexcept
