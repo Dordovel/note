@@ -1,15 +1,15 @@
 #ifndef WINDOW_INTERFACE
 #define WINDOW_INTERFACE
 
+#include "component_event.h"
 #include <string>
 #include <vector>
 
 struct Data;
 
-class IWindow
+class IWindow : public IComponentEvent
 {
 	public:
-
 		virtual void open() = 0;
 		virtual void close() = 0;
 

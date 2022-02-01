@@ -2,7 +2,7 @@
 #define EDIT_WINDOW
 
 #include "../interface/window.h"
-#include "./dispatcher.h"
+#include "./core_dispatcher.h"
 #include "../data.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
@@ -18,7 +18,7 @@
 class EditWindow : public Gtk::Window, public IWindow
 {
 	private:
-		std::shared_ptr<IDispatcher> _dispatcher;
+		std::shared_ptr<ICoreDispatcher> _dispatcher;
 		Glib::RefPtr<Gtk::CssProvider> _css_entry;
         Glib::RefPtr<Gtk::Application> _app;
 
@@ -56,7 +56,8 @@ class EditWindow : public Gtk::Window, public IWindow
 		void set_id(std::string_view name) noexcept override;
 		std::string id() const noexcept override;
 
-        virtual void set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept;
+        virtual void set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispather) noexcept;
+		void event(ComponentEventTypes type, std::size_t index) noexcept override;
 
 		void print(const Data& value) noexcept override;
 

@@ -10,35 +10,21 @@
 MainWindow::MainWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade):Window(cobject, m_refGlade)
 {
-    this->_open_icon = Gdk::Pixbuf::create_from_file("./resource/image/16px/settings-button.png");
+	m_refGlade->get_widget("NotesButtonOpen", this->_openButton);
+	this->_openButton->signal_clicked().connect(sigc::mem_fun(this, &MainWindow::signal_open_button_click));
 }
 
-Gtk::Grid* MainWindow::tool_buttons(size_t rowIndex)
+void MainWindow::signal_open_button_click() noexcept
 {
-    Gtk::Grid* grid = Window::tool_buttons(rowIndex);
+	int selectId = this->_component->get_selected_item();
+	if(selectId < 0) return;
 
-    Gtk::Image* openImage = Gtk::manage(new Gtk::Image(this->_open_icon));
+	this->_openButton->set_visible(true);
 
-    Gtk::Button* buttonOpen = Gtk::manage(new Gtk::Button());
-    buttonOpen->set_image_position(Gtk::POS_LEFT);
-    buttonOpen->set_name("NotesButtonOpen");
-    buttonOpen->set_image(*openImage);
-    auto button_open_handle = [this, index=rowIndex](){
-		this->signal_open_button_click(index);};
-    buttonOpen->signal_pressed().connect(button_open_handle);
-
-    grid->insert_column(0);
-    grid->attach(*buttonOpen, 0, 0);
-
-    return grid;
+    this->_dispatcher->handler()->event(this->id(), CoreEventTypes::OPEN, selectId, WindowType::LIST);
 }
 
-void MainWindow::signal_open_button_click(std::size_t rowIndex) noexcept
-{
-    this->_dispatcher->handler()->event(this->id(), Event::OPEN, rowIndex, WindowType::LIST);
-}
-
-void MainWindow::set_event_dispatcher(std::shared_ptr <IDispatcher> dispatcher) noexcept
+void MainWindow::set_event_dispatcher(std::shared_ptr <ICoreDispatcher> dispatcher) noexcept
 {
     Window::set_event_dispatcher(dispatcher);
     this->_dispatcher = std::move(dispatcher);

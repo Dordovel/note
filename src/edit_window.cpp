@@ -23,12 +23,12 @@ EditWindow::EditWindow(BaseObjectType* cobject,
 
 void EditWindow::signal_show_window() noexcept
 {
-	this->_dispatcher->handler()->event(this->id(), Event::SHOW);
+	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::SHOW);
 }
 
 bool EditWindow::signal_hide_window(GdkEventAny* event) noexcept
 {
-	this->_dispatcher->handler()->event(this->id(), Event::HIDE);
+	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::HIDE);
 	return true;
 }
 
@@ -98,9 +98,13 @@ std::string EditWindow::id() const noexcept
 	return Gtk::Window::get_name();
 }
 
-void EditWindow::set_event_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept
+void EditWindow::set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispatcher) noexcept
 {
 	this->_dispatcher = std::move(dispatcher);
+}
+
+void EditWindow::event(ComponentEventTypes type, std::size_t index) noexcept
+{
 }
 
 void EditWindow::signal_save_button_click() noexcept
@@ -115,8 +119,8 @@ void EditWindow::signal_save_button_click() noexcept
 	this->_buffer.title = this->_title->get_text();
     auto viewBuffer = this->_view->get_buffer();
 	this->_buffer.note = std::string(viewBuffer->get_text().data(), viewBuffer->get_text().length());
-	this->_dispatcher->handler()->event(this->id(), Event::CHANGE, this->_buffer);
-	this->_dispatcher->handler()->event(this->id(), Event::HIDE);
+	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::CHANGE, this->_buffer);
+	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::HIDE);
 }
 
 void EditWindow::print(const Data& value) noexcept

@@ -6,18 +6,16 @@
 class MainWindow : public Window
 {
     private:
-        std::shared_ptr<IDispatcher> _dispatcher;
-        Glib::RefPtr<Gdk::Pixbuf> _open_icon;
-        class Gtk::Grid* tool_buttons(size_t rowIndex) override;
+        std::shared_ptr<ICoreDispatcher> _dispatcher;
+		Gtk::Button* _openButton;
 
-		void signal_open_button_click(std::size_t rowIndex) noexcept;
+		void signal_open_button_click() noexcept;
 
 	public:
 		MainWindow(BaseObjectType* cobject, 
 			const Glib::RefPtr<Gtk::Builder>& m_refGlade);
 
-		void set_event_dispatcher(std::shared_ptr<IDispatcher> dispather) noexcept
-			override;
+		void set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispather) noexcept override;
 
 		~MainWindow() = default;
 

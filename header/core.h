@@ -64,10 +64,10 @@ class Core final : public ICore
 
 		void register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept override;
 
-		void event(std::string_view id, Event type, std::size_t index) noexcept override;
-		void event(std::string_view id, Event type) noexcept override;
-		void event(std::string_view id, Event type, struct Data value) noexcept override;
-		void event(std::string_view id, Event type, std::size_t index, WindowType window) noexcept override;
+		void event(std::string_view id, CoreEventTypes type, std::size_t index) noexcept override;
+		void event(std::string_view id, CoreEventTypes type) noexcept override;
+		void event(std::string_view id, CoreEventTypes type, struct Data value) noexcept override;
+		void event(std::string_view id, CoreEventTypes type, std::size_t index, WindowType window) noexcept override;
 };
 
 #endif //CORE

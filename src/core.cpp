@@ -164,7 +164,7 @@ void Core::register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcep
 	this->_manager = std::move(manager);
 }
 
-void Core::event(std::string_view id, Event type, std::size_t index) noexcept
+void Core::event(std::string_view id, CoreEventTypes type, std::size_t index) noexcept
 {
 	Core::_buffer_* const pBuffer = this->current_buffer();
 
@@ -174,21 +174,21 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
 
     switch(type)
     {
-		case Event::ACTIVATE:
+		case CoreEventTypes::ACTIVATE:
 		{
 			row.status = Core::_status_::CHANGE;
 			row.data.status = true;
 		}
 		break;
 
-        case Event::DEACTIVATE:
+        case CoreEventTypes::DEACTIVATE:
 		{
 			row.status = Core::_status_::CHANGE;
 			row.data.status = false;
 		}
 		break;
 
-		case Event::DELETE:
+		case CoreEventTypes::DELETE:
 		{
 			row.status = Core::_status_::DELETE;
 			decltype(pBuffer->_data)::iterator a(&row), b(&row);
@@ -204,7 +204,7 @@ void Core::event(std::string_view id, Event type, std::size_t index) noexcept
     }
 }
 
-void Core::event(std::string_view id, Event type) noexcept 
+void Core::event(std::string_view id, CoreEventTypes type) noexcept 
 {
 	auto weakPointer = this->_manager->window(id);
 	auto window = weakPointer.lock();
@@ -214,14 +214,14 @@ void Core::event(std::string_view id, Event type) noexcept
 
 	switch(type)
 	{
-        case Event::SAVE:
+        case CoreEventTypes::SAVE:
         {
 			Core::_buffer_ newBuffer = this->save_buffer(*pBuffer);
 			std::swap(this->_pages.top(), newBuffer);
         }
         break;
 
-        case Event::HIDE:
+        case CoreEventTypes::HIDE:
         {
             if(!this->is_empty(*pBuffer))
             {
@@ -233,7 +233,7 @@ void Core::event(std::string_view id, Event type) noexcept
         }
         break;
 
-		case Event::SHOW:
+		case CoreEventTypes::SHOW:
 		{
 			if(this->_pages.empty()) this->_pages.push(this->load_buffer());
 			Core::_buffer_* const pBuffer = this->current_buffer();
@@ -243,7 +243,7 @@ void Core::event(std::string_view id, Event type) noexcept
 		}
 		break;
 
-		case Event::INSERT:
+		case CoreEventTypes::INSERT:
 		{
 			Core::_data_ val = this->create_empty_element();
 			Core::_buffer_* pBuffer = this->current_buffer();
@@ -257,11 +257,11 @@ void Core::event(std::string_view id, Event type) noexcept
 	}
 }
 
-void Core::event(std::string_view id, Event type, struct Data value) noexcept
+void Core::event(std::string_view id, CoreEventTypes type, struct Data value) noexcept
 {
     switch(type)
     {
-		case Event::CHANGE:
+		case CoreEventTypes::CHANGE:
 		{
 			this->_pages.pop();
 			Core::_buffer_* last = this->current_buffer();
@@ -285,14 +285,14 @@ void Core::event(std::string_view id, Event type, struct Data value) noexcept
     }
 }
 
-void Core::event(std::string_view id, Event type, std::size_t index, WindowType window) noexcept
+void Core::event(std::string_view id, CoreEventTypes type, std::size_t index, WindowType window) noexcept
 {
     Core::_buffer_* const pBuffer = this->current_buffer();
     Core::_data_& row = pBuffer->_data.at(index);
 
     switch(type)
     {
-		case Event::OPEN:
+		case CoreEventTypes::OPEN:
 		{
 			auto weakPointer = this->_manager->window(window);
 			auto windowPointer = weakPointer.lock();

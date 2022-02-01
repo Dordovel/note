@@ -22,9 +22,25 @@ row:last-child
 	border-bottom: 1px solid;
 }
 
-label
+row:nth-child(odd)
 {
-    color: red;
+	background-color: lightblue;
+}
+
+row:nth-child(even)
+{
+	background-color: white;
+}
+
+row
+{
+	color: Black;
+}
+
+row:focus
+{
+	background-color: Black;
+	color: White;
 }
 
 button
@@ -32,24 +48,7 @@ button
 	border: 1px solid;
 }
 
-.oddListRow
-{
-	background-color: lightblue;
-}
-
-.evenListRow
-{
-	background-color: white;
-}
-
 .activeListRow
 {
 	background-color: orange;
-}
-
-#NotesLabel
-{
-	color: black;
-	font-size: 16px;
-	font-weight: bold;
 }

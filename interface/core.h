@@ -2,11 +2,11 @@
 #define CORE_INTERFACE
 
 #include "./window.h"
-#include "./event.h"
+#include "./core_event.h"
 
 #include "window_manager.hpp"
 
-class ICore : public IEvent
+class ICore : public ICoreEvent
 {
 	public:
 		virtual void register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept = 0;

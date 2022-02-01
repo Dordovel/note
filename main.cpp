@@ -14,7 +14,7 @@ int main()
 
 	std::shared_ptr<Core> core = std::make_shared<Core>(database);
 
-	std::shared_ptr<Dispatcher> dispatcher = std::make_shared<Dispatcher>();
+	std::shared_ptr<CoreDispatcher> dispatcher = std::make_shared<CoreDispatcher>();
 	dispatcher->set_handler(core);
 
 	Glib::RefPtr<Gtk::Builder> builder = Gtk::Builder::create();

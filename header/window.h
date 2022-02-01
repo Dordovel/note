@@ -2,50 +2,49 @@
 #define WINDOW
 
 #include "../interface/window.h"
-#include "./dispatcher.h"
+#include "./core_dispatcher.h"
 #include "gtkmm/checkbutton.h"
+#include "gtkmm/viewport.h"
+#include "row.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <gtkmm-3.0/gtkmm/label.h>
-#include <gtkmm-3.0/gtkmm/listbox.h>
-#include <gtkmm-3.0/gtkmm/listboxrow.h>
 #include <gtkmm-3.0/gtkmm/builder.h>
 #include <glibmm-2.4/glibmm/refptr.h>
 #include <gtkmm-3.0/gtkmm/button.h>
 #include <gtkmm-3.0/gtkmm/cssprovider.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 #include <gtkmm-3.0/gtkmm/grid.h>
+#include <gtkmm-3.0/gtkmm/combobox.h>
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 
 class Window : public Gtk::Window, public IWindow
 {
 	private:
-		std::shared_ptr<IDispatcher> _eventDispatcher;
-        Glib::RefPtr<Gdk::Pixbuf> _editIcon;
-		Glib::RefPtr<Gdk::Pixbuf> _deleteIcon;
+		std::shared_ptr<ICoreDispatcher> _eventDispatcher;
         Glib::RefPtr<Gtk::Application> _app;
 
-        Gtk::ListBox* _listBox;
 		Gtk::Button* _addNewItemButton;
 		Gtk::Button* _saveNoteButton;
+		Gtk::Button* _editButton;
+		Gtk::Button* _deleteButton;
 		Gtk::Label* statusBar;
 		Gtk::ScrolledWindow* _scrolledWindow;
+		Gtk::ComboBox* _viewType;
+		Gtk::Viewport* _view;
 
         void signal_show_window() noexcept;
         bool signal_hide_window(GdkEventAny* event) noexcept;
 
-		void signal_edit_button_click(std::size_t rowIndex) noexcept;
-        void signal_delete_button_click(std::size_t rowIndex) noexcept;
-        void signal_activate_button_click(Gtk::CheckButton* button) noexcept;
+		void signal_edit_button_click() noexcept;
+        void signal_delete_button_click() noexcept;
 		void signal_add_button_click() noexcept;
 		void signal_save_button_click() noexcept;
 
-		Gtk::ListBoxRow* create_row(const Data& value) noexcept;
-
-
-    protected:
-        virtual class Gtk::Grid* tool_buttons(size_t rowIndex);
-
+		void change_view(std::string_view component);
+	
+	protected:
+		IComponent* _component;
 
 	public:
 		Window(BaseObjectType* cobject, 
@@ -69,7 +68,8 @@ class Window : public Gtk::Window, public IWindow
 		void set_id(std::string_view name) noexcept override;
 		std::string id() const noexcept override;
 
-        virtual void set_event_dispatcher(std::shared_ptr<IDispatcher> dispatcher) noexcept;
+        virtual void set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispatcher) noexcept;
+		void event(ComponentEventTypes type, std::size_t index) noexcept override;
 
 		void print(const Data& value) noexcept override;
 
