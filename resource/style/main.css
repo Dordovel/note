@@ -3,18 +3,19 @@ window
 	background-color: white;
 }
 
-list
+list, flowbox
 {
 	background-color: lightgray;
 }
 
-row
+row, flowboxchild
 {
 	border-image-source: linear-gradient(to left, blue, #d53a9d);
 	border-top: 1px solid;
 	border-left: 1px solid;
 	border-right: 1px solid;
 	border-image-slice: 1;
+	color: Black;
 }
 
 row:last-child
@@ -22,22 +23,17 @@ row:last-child
 	border-bottom: 1px solid;
 }
 
-row:nth-child(odd)
+row:nth-child(odd),flowboxchild:nth-child(odd) 
 {
 	background-color: lightblue;
 }
 
-row:nth-child(even)
+row:nth-child(even),flowboxchild:nth-child(even)
 {
 	background-color: white;
 }
 
-row
-{
-	color: Black;
-}
-
-row:focus
+row:focus,flowboxchild:focus 
 {
 	background-color: Black;
 	color: White;

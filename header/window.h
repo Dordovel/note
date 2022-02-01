@@ -2,10 +2,10 @@
 #define WINDOW
 
 #include "../interface/window.h"
+#include "../interface/component.h"
 #include "./core_dispatcher.h"
 #include "gtkmm/checkbutton.h"
 #include "gtkmm/viewport.h"
-#include "row.h"
 
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <gtkmm-3.0/gtkmm/label.h>
@@ -30,7 +30,6 @@ class Window : public Gtk::Window, public IWindow
 		Gtk::Button* _deleteButton;
 		Gtk::Label* statusBar;
 		Gtk::ScrolledWindow* _scrolledWindow;
-		Gtk::ComboBox* _viewType;
 		Gtk::Viewport* _view;
 
         void signal_show_window() noexcept;

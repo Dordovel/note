@@ -55,12 +55,6 @@ Gtk::Box* ListRow::create_box(const Data &value) noexcept
 	box->pack_start(*newRowItemCheckButton, false, false, 12);
 	box->pack_start(*newItemRowTitleLabel, true, true, 10);
 
-	Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
-	row->property_activatable() = false;
-	row->property_selectable() = false;
-	auto rowStyleContext = row->get_style_context();
-	if(value.status) rowStyleContext->add_class("activeListRow");
-
 	return box;
 }
 

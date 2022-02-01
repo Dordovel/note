@@ -1,16 +1,9 @@
 #include "../header/window.h"
 
-#include "../data.h"
-#include "../window_types.hpp"
-#include "gtkmm/comboboxtext.h"
-#include "gtkmm/enums.h"
-#include "gtkmm/listboxrow.h"
-#include "gtkmm/object.h"
-
 #include <algorithm>
 #include <iostream>
-
 #include <cstddef>
+
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/button.h>
 #include <gtkmm-3.0/gtkmm/entry.h>
@@ -18,6 +11,15 @@
 #include <gtkmm-3.0/gtkmm/checkbutton.h>
 #include <gtkmm-3.0/gtkmm/grid.h>
 #include <gtkmm-3.0/gtkmm/dialog.h>
+#include "gtkmm/comboboxtext.h"
+#include "gtkmm/enums.h"
+#include "gtkmm/listboxrow.h"
+#include "gtkmm/object.h"
+
+#include "../data.h"
+#include "../window_types.hpp"
+#include "../header/row.h"
+#include "../header/grid.h"
 
 Window::Window(BaseObjectType* cobject,
 	const Glib::RefPtr<Gtk::Builder>& m_refGlade) : Gtk::Window(cobject)
@@ -31,7 +33,6 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("SaveNoteButton", this->_saveNoteButton);
 	m_refGlade->get_widget("StatusBar", this->statusBar);
 	m_refGlade->get_widget("ScrollWindow", this->_scrolledWindow);
-	m_refGlade->get_widget("ViewType", this->_viewType);
 
 	this->change_view("list");
 
@@ -51,6 +52,13 @@ void Window::change_view(std::string_view component)
 	if(component == "list")
 	{
 		auto newComponent = Gtk::manage(new ListRow);
+		newComponent->set_event_handler(this);
+		this->_view->add(*newComponent);
+		this->_component = newComponent;
+	}
+	else if(component == "grid")
+	{
+		auto newComponent = Gtk::manage(new GridRow);
 		newComponent->set_event_handler(this);
 		this->_view->add(*newComponent);
 		this->_component = newComponent;
@@ -140,6 +148,7 @@ void Window::set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispather) no
 
 void Window::event(ComponentEventTypes type, std::size_t index) noexcept
 {
+			this->set_info_message(std::to_string(index));
 	switch(type)
 	{
 		case ComponentEventTypes::ACTIVATE:
