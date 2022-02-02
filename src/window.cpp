@@ -34,12 +34,17 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("StatusBar", this->statusBar);
 	m_refGlade->get_widget("ScrollWindow", this->_scrolledWindow);
 
+	m_refGlade->get_widget("GridButton", this->_gridButton);
+	m_refGlade->get_widget("ListButton", this->_listButton);
+
 	this->change_view("list");
 
 	this->_addNewItemButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_add_button_click));
 	this->_saveNoteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_save_button_click));
 	this->_editButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_edit_button_click));
 	this->_deleteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_delete_button_click));
+	this->_gridButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_change_view_to_grid));
+	this->_listButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_change_view_to_list));
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show_window));
 	Gtk::Window::signal_delete_event().connect(sigc::mem_fun(this, &Window::signal_hide_window));
 
@@ -49,6 +54,9 @@ Window::Window(BaseObjectType* cobject,
 
 void Window::change_view(std::string_view component)
 {
+	auto child = this->_view->get_children();
+	for(auto val : child) this->_view->remove();
+
 	if(component == "list")
 	{
 		auto newComponent = Gtk::manage(new ListRow);
@@ -63,6 +71,19 @@ void Window::change_view(std::string_view component)
 		this->_view->add(*newComponent);
 		this->_component = newComponent;
 	}
+
+}
+
+void Window::signal_change_view_to_list() noexcept
+{
+	this->change_view("list");
+	this->_eventDispatcher->handler()->event(this->id(), CoreEventTypes::UPDATE);
+}
+
+void Window::signal_change_view_to_grid() noexcept
+{
+	this->change_view("grid");
+	this->_eventDispatcher->handler()->event(this->id(), CoreEventTypes::UPDATE);
 }
 
 void Window::signal_show_window() noexcept

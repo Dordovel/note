@@ -243,6 +243,13 @@ void Core::event(std::string_view id, CoreEventTypes type) noexcept
 		}
 		break;
 
+		case CoreEventTypes::UPDATE:
+		{
+			Core::_buffer_* const pBuffer = this->current_buffer();
+			this->update_window(window.get(), *pBuffer);
+		}
+		break;
+
 		case CoreEventTypes::INSERT:
 		{
 			Core::_data_ val = this->create_empty_element();

@@ -28,6 +28,8 @@ class Window : public Gtk::Window, public IWindow
 		Gtk::Button* _saveNoteButton;
 		Gtk::Button* _editButton;
 		Gtk::Button* _deleteButton;
+		Gtk::Button* _gridButton;
+		Gtk::Button* _listButton;
 		Gtk::Label* statusBar;
 		Gtk::ScrolledWindow* _scrolledWindow;
 		Gtk::Viewport* _view;
@@ -39,6 +41,8 @@ class Window : public Gtk::Window, public IWindow
         void signal_delete_button_click() noexcept;
 		void signal_add_button_click() noexcept;
 		void signal_save_button_click() noexcept;
+		void signal_change_view_to_list() noexcept;
+		void signal_change_view_to_grid() noexcept;
 
 		void change_view(std::string_view component);
 	
