@@ -18,7 +18,7 @@ enum class CoreEventTypes
 };
 
 enum class WindowType;
-struct Data;
+struct Block;
 
 class ICoreEvent
 {
@@ -26,7 +26,7 @@ class ICoreEvent
 
 		virtual void event(std::string_view id, CoreEventTypes type, std::size_t index) noexcept = 0;
 		virtual void event(std::string_view id, CoreEventTypes type) noexcept = 0;
-		virtual void event(std::string_view id, CoreEventTypes type, struct Data value) noexcept = 0;
+		virtual void event(std::string_view id, CoreEventTypes type, struct Block value) noexcept = 0;
 		virtual void event(std::string_view id, CoreEventTypes type, std::size_t index, WindowType window) noexcept = 0;
 };
 

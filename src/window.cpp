@@ -4,19 +4,10 @@
 #include <iostream>
 #include <cstddef>
 
-#include <gtkmm-3.0/gtkmm/box.h>
-#include <gtkmm-3.0/gtkmm/button.h>
-#include <gtkmm-3.0/gtkmm/entry.h>
-#include <gtkmm-3.0/gtkmm/image.h>
-#include <gtkmm-3.0/gtkmm/checkbutton.h>
-#include <gtkmm-3.0/gtkmm/grid.h>
 #include <gtkmm-3.0/gtkmm/dialog.h>
-#include "gtkmm/comboboxtext.h"
 #include "gtkmm/enums.h"
-#include "gtkmm/listboxrow.h"
 #include "gtkmm/object.h"
 
-#include "../data.h"
 #include "../window_types.hpp"
 #include "../header/row.h"
 #include "../header/grid.h"
@@ -33,7 +24,6 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("SaveNoteButton", this->_saveNoteButton);
 	m_refGlade->get_widget("StatusBar", this->statusBar);
 	m_refGlade->get_widget("ScrollWindow", this->_scrolledWindow);
-
 	m_refGlade->get_widget("GridButton", this->_gridButton);
 	m_refGlade->get_widget("ListButton", this->_listButton);
 
@@ -45,6 +35,7 @@ Window::Window(BaseObjectType* cobject,
 	this->_deleteButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_delete_button_click));
 	this->_gridButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_change_view_to_grid));
 	this->_listButton->signal_clicked().connect(sigc::mem_fun(this, &Window::signal_change_view_to_list));
+
 	Gtk::Window::signal_show().connect(sigc::mem_fun(this, &Window::signal_show_window));
 	Gtk::Window::signal_delete_event().connect(sigc::mem_fun(this, &Window::signal_hide_window));
 
@@ -71,7 +62,6 @@ void Window::change_view(std::string_view component)
 		this->_view->add(*newComponent);
 		this->_component = newComponent;
 	}
-
 }
 
 void Window::signal_change_view_to_list() noexcept
@@ -215,7 +205,7 @@ void Window::signal_delete_button_click() noexcept
 	this->_eventDispatcher->handler()->event(this->id(), CoreEventTypes::DELETE, selectId);
 }
 
-void Window::print(const Data& value) noexcept
+void Window::print(const Block& value) noexcept
 {
 	this->_component->add(value);
 	this->_view->show_all_children(false);

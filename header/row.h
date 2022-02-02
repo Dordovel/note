@@ -13,8 +13,8 @@
 class ListRow : public Gtk::ListBox, public IComponent
 {
 	private:
-		Gtk::ListBoxRow* create_item(const Data& value) noexcept;
-		Gtk::Box* create_box(const Data& value) noexcept;
+		Gtk::ListBoxRow* create_item(const Block& value) noexcept;
+		Gtk::Box* create_box(const Block& value) noexcept;
 		Gtk::CheckButton* create_row_check(bool status) noexcept;
 		unsigned int get_rows_count() const noexcept;
 
@@ -28,7 +28,7 @@ class ListRow : public Gtk::ListBox, public IComponent
 		void set_event_handler(IComponentEvent* handler) noexcept;
 
 		int get_selected_item() const noexcept override;
-		void add(const Data& value) noexcept override;
+		void add(const Block& value) noexcept override;
 		void clear() noexcept override;
 };
 

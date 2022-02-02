@@ -4,12 +4,13 @@
 #include "../interface/core.h"
 #include "../data.h"
 #include "./database.h"
+#include "glibmm/spawn.h"
 
 #include <glibmm-2.4/glibmm/refptr.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <stack>
-
+#include <optional>
 
 class Core final : public ICore
 {
@@ -27,46 +28,44 @@ class Core final : public ICore
 			NEW
 		};
 
-		struct _data_
+		struct _line_
 		{
 			_status_ status;
 			_created_ created;
 
-			struct Data data;
+			struct Block block;
 		};
 
-		struct _buffer_
+		struct _page_
 		{
 			int _id;
 			std::string window;
-			std::vector<_data_> _data;
+			std::vector<_line_> _lines;
 		};
 
-		_buffer_ load_buffer(int parent = -1) noexcept;
+		Core::_page_ load_page_from_db(int parent = -1) noexcept;
+		Core::_line_ create_empty_element() noexcept;
+		Core::_page_ save_page(_page_ buffer) const noexcept;
+		Core::_page_* current_page() noexcept;
+		bool is_change(const _page_& buffer) const noexcept;
+        void update_window(std::string_view window, const Core::_page_& buffer) noexcept;
+		void update_window(IWindow* window, const Core::_page_& buffer) noexcept;
 
-		Core::_data_ create_empty_element() noexcept;
-
-		_buffer_ save_buffer(_buffer_ buffer) const noexcept;
-		bool is_empty(const _buffer_& buffer) const noexcept;
-		_buffer_* current_buffer() noexcept;
-        void update_window(std::string_view window, const Core::_buffer_& buffer) noexcept;
-		void update_window(IWindow* window, const Core::_buffer_& buffer) noexcept;
-
+		std::stack<_page_> _pages;
 		std::unique_ptr<IWindowRegisterGet> _manager;
-		std::stack<_buffer_> _pages;
 		std::shared_ptr<IDatabase> _database;
 
 		std::string _table = "main";
 
 	public:
-		Core(std::shared_ptr<IDatabase>  database);
+		explicit Core(std::shared_ptr<IDatabase>  database);
 		~Core() = default;
 
 		void register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept override;
 
 		void event(std::string_view id, CoreEventTypes type, std::size_t index) noexcept override;
 		void event(std::string_view id, CoreEventTypes type) noexcept override;
-		void event(std::string_view id, CoreEventTypes type, struct Data value) noexcept override;
+		void event(std::string_view id, CoreEventTypes type, struct Block value) noexcept override;
 		void event(std::string_view id, CoreEventTypes type, std::size_t index, WindowType window) noexcept override;
 };
 

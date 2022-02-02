@@ -116,19 +116,19 @@ void EditWindow::signal_save_button_click() noexcept
 		return;
 	}
 
-	this->_buffer.title = this->_title->get_text();
+	this->_buffer.header = this->_title->get_text();
     auto viewBuffer = this->_view->get_buffer();
-	this->_buffer.note = std::string(viewBuffer->get_text().data(), viewBuffer->get_text().length());
+	this->_buffer.text = std::string(viewBuffer->get_text().data(), viewBuffer->get_text().length());
 	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::CHANGE, this->_buffer);
 	this->_dispatcher->handler()->event(this->id(), CoreEventTypes::HIDE);
 }
 
-void EditWindow::print(const Data& value) noexcept
+void EditWindow::print(const Block& value) noexcept
 {
-    this->_title->set_text(value.title);
+    this->_title->set_text(value.header);
     this->_title->set_position(this->_title->get_text_length());
 	auto buffer = Gtk::TextBuffer::create();
-	buffer->set_text(value.note);
+	buffer->set_text(value.text);
 	this->_view->set_buffer(buffer);
 	this->_buffer = value;
 }

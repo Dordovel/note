@@ -74,7 +74,7 @@ class Window : public Gtk::Window, public IWindow
         virtual void set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispatcher) noexcept;
 		void event(ComponentEventTypes type, std::size_t index) noexcept override;
 
-		void print(const Data& value) noexcept override;
+		void print(const Block& value) noexcept override;
 
         void set_path_to_css_file(std::string_view path) noexcept override;
 

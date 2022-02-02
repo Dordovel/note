@@ -18,6 +18,11 @@ row, flowboxchild
 	color: Black;
 }
 
+flowboxchild
+{
+	border-bottom: 1px solid;
+}
+
 row:last-child
 {
 	border-bottom: 1px solid;

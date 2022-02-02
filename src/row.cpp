@@ -13,14 +13,14 @@ ListRow::ListRow():Gtk::ListBox(),_handler(nullptr)
 	Gtk::ListBox::set_selection_mode(Gtk::SelectionMode::SELECTION_SINGLE);
 }
 
-Gtk::ListBoxRow* ListRow::create_item(const Data& value) noexcept
+Gtk::ListBoxRow* ListRow::create_item(const Block& value) noexcept
 {
 	unsigned int list_items_count = this->get_rows_count();
 	auto rowIndex = list_items_count + 1;
 
 	Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
 	auto rowStyleContext = row->get_style_context();
-	if(value.status) rowStyleContext->add_class("activeListRow");
+	if(value.is_active) rowStyleContext->add_class("activeListRow");
 
 	Gtk::Box* box = this->create_box(value);
 
@@ -29,7 +29,7 @@ Gtk::ListBoxRow* ListRow::create_item(const Data& value) noexcept
 	return row;
 }
 
-Gtk::Box* ListRow::create_box(const Data &value) noexcept
+Gtk::Box* ListRow::create_box(const Block &value) noexcept
 {
 	unsigned int list_items_count = this->get_rows_count();
 	auto rowIndex = list_items_count + 1;
@@ -38,14 +38,14 @@ Gtk::Box* ListRow::create_box(const Data &value) noexcept
 	newItemRowIndexLabel->set_text(std::to_string(rowIndex) + std::string("."));
 
 	Gtk::Label* newItemRowTitleLabel = Gtk::manage(new Gtk::Label);
-	newItemRowTitleLabel->set_text(value.title);
+	newItemRowTitleLabel->set_text(value.header);
 	newItemRowTitleLabel->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
 	newItemRowTitleLabel->set_name("NotesLabel");
 	newItemRowTitleLabel->set_halign(Gtk::Align::ALIGN_FILL);
 	newItemRowTitleLabel->set_has_tooltip();
-	newItemRowTitleLabel->set_tooltip_text(value.note);
+	newItemRowTitleLabel->set_tooltip_text(value.text);
 	
-	Gtk::CheckButton* newRowItemCheckButton = this->create_row_check(value.status);
+	Gtk::CheckButton* newRowItemCheckButton = this->create_row_check(value.is_active);
 	auto toggle_handle = [this, button=newRowItemCheckButton](){
 		this->signal_activate_button_click(button);};
 	newRowItemCheckButton->signal_pressed().connect(toggle_handle);
@@ -105,7 +105,7 @@ int ListRow::get_selected_item() const noexcept
 	return -1;
 }
 
-void ListRow::add(const Data& value) noexcept
+void ListRow::add(const Block& value) noexcept
 {
 	Gtk::ListBox::append(*this->create_item(value));
 	Gtk::ListBox::show_all_children();

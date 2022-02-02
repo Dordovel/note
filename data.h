@@ -3,15 +3,15 @@
 
 #include <string>
 
-struct Data
+struct Block
 {
     int index;
-    std::string title;
-    std::string note;
-    bool status;
+    std::string header;
+    std::string text;
+    bool is_active;
 
-	Data(): index(0), title(""), status(false), note(""){};
-	~Data() = default;
+	Block(): index(0), is_active(false) {};
+	~Block() = default;
 };
 
 #endif //DATA_STRUCT

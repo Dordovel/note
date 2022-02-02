@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-struct Data;
+struct Block;
 
 class IWindow : public IComponentEvent
 {
@@ -27,7 +27,7 @@ class IWindow : public IComponentEvent
 		virtual void set_id(std::string_view name) noexcept = 0;
 		virtual std::string id() const noexcept = 0;
 
-		virtual void print(const struct Data& value) noexcept = 0;
+		virtual void print(const struct Block& value) noexcept = 0;
 
 		virtual void clear() noexcept = 0;
 		

@@ -32,7 +32,7 @@ class EditWindow : public Gtk::Window, public IWindow
         bool signal_hide_window(GdkEventAny* event) noexcept;
 		void signal_save_button_click() noexcept;
 
-		Data _buffer;
+		Block _buffer;
 
 	public:
 		EditWindow(BaseObjectType* cobject, 
@@ -59,7 +59,7 @@ class EditWindow : public Gtk::Window, public IWindow
         virtual void set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispather) noexcept;
 		void event(ComponentEventTypes type, std::size_t index) noexcept override;
 
-		void print(const Data& value) noexcept override;
+		void print(const Block& value) noexcept override;
 
         void set_path_to_css_file(std::string_view path) noexcept override;
 
