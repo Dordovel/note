@@ -5,63 +5,42 @@
 #include "../data.h"
 #include "./database.h"
 #include "glibmm/spawn.h"
+#include "page.h"
+#include "page_factory.h"
+#include "page_saver.h"
 
 #include <glibmm-2.4/glibmm/refptr.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 #include <gtkmm-3.0/gtkmm/window.h>
 #include <stack>
-#include <optional>
+#include <unordered_map>
 
 class Core final : public ICore
 {
 	private:
-		enum _status_
+
+		struct _window_
 		{
-			CHANGE,
-			DELETE,
-			NONE
-		};
-		
-		enum _created_
-		{
-			LOAD,
-			NEW
+			int level = 0;
+			std::unordered_map<std::size_t, std::size_t> _blockReferer;
+			std::string _windowId;
+			std::weak_ptr<IWindow> _window;
+			std::shared_ptr<IPage> _page;
 		};
 
-		struct _line_
-		{
-			_status_ status;
-			_created_ created;
+		void update_window(Core::_window_& window) noexcept;
 
-			struct Block block;
-		};
-
-		struct _page_
-		{
-			int _id;
-			std::string window;
-			std::vector<_line_> _lines;
-		};
-
-		Core::_page_ load_page_from_db(int parent = -1) noexcept;
-		Core::_line_ create_empty_element() noexcept;
-		Core::_page_ save_page(_page_ buffer) const noexcept;
-		Core::_page_* current_page() noexcept;
-		bool is_change(const _page_& buffer) const noexcept;
-        void update_window(std::string_view window, const Core::_page_& buffer) noexcept;
-		void update_window(IWindow* window, const Core::_page_& buffer) noexcept;
-
-		std::stack<_page_> _pages;
+		std::stack<Core::_window_> _windows;
 		std::unique_ptr<IWindowRegisterGet> _manager;
-		std::shared_ptr<IDatabase> _database;
 
-		std::string _table = "main";
+		std::unique_ptr<PageFactory> _pageFactory;
+		std::unique_ptr<PageSaver> _pageSaver;
 
 	public:
-		explicit Core(std::shared_ptr<IDatabase>  database);
-		~Core() = default;
 
 		void register_manager(std::unique_ptr<IWindowRegisterGet> manager) noexcept override;
+		void register_page_factory(std::unique_ptr<PageFactory> factory);
+		void register_page_saver(std::unique_ptr<PageSaver> saver);
 
 		void event(std::string_view id, CoreEventTypes type, std::size_t index) noexcept override;
 		void event(std::string_view id, CoreEventTypes type) noexcept override;

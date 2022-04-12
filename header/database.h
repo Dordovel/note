@@ -7,7 +7,8 @@
 struct sqlite3;
 
 class Database final : public IDatabase
-{ private: sqlite3* db;
+{
+	private: sqlite3* db;
 	public:
 		int connect(std::string_view path) noexcept override;
 		int last_insert_id() const noexcept override;

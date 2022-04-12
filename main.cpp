@@ -4,6 +4,7 @@
 #include "./header/edit_window.hpp"
 #include "./header/core.h"
 #include "./header/window_manager.hpp"
+#include "header/page_factory.h"
 #include "window_types.hpp"
 
 int main()
@@ -12,7 +13,10 @@ int main()
 	std::shared_ptr<IDatabase> database = std::make_shared<Database>();
 	database->connect("./resource/db/note.db");
 
-	std::shared_ptr<Core> core = std::make_shared<Core>(database);
+	std::unique_ptr<PageFactory> factory = std::make_unique<PageFactory>(database);
+	std::unique_ptr<PageSaver> saver = std::make_unique<PageSaver>(database);
+
+	std::shared_ptr<Core> core = std::make_shared<Core>();
 
 	std::shared_ptr<CoreDispatcher> dispatcher = std::make_shared<CoreDispatcher>();
 	dispatcher->set_handler(core);
@@ -56,6 +60,8 @@ int main()
 	manager->register_window(gtkMainWindowPointer->id(), WindowType::MAIN, std::move(gtkMainWindow));
 
 	core->register_manager(std::move(manager));
+	core->register_page_factory(std::move(factory));
+	core->register_page_saver(std::move(saver));
 
 	app->run(*gtkMainWindowPointer);
 

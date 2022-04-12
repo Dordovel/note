@@ -20,7 +20,7 @@ Gtk::ListBoxRow* ListRow::create_item(const Block& value) noexcept
 
 	Gtk::ListBoxRow* row = Gtk::manage(new Gtk::ListBoxRow());
 	auto rowStyleContext = row->get_style_context();
-	if(value.is_active) rowStyleContext->add_class("activeListRow");
+	if(value.is_active()) rowStyleContext->add_class("activeListRow");
 
 	Gtk::Box* box = this->create_box(value);
 
@@ -38,14 +38,14 @@ Gtk::Box* ListRow::create_box(const Block &value) noexcept
 	newItemRowIndexLabel->set_text(std::to_string(rowIndex) + std::string("."));
 
 	Gtk::Label* newItemRowTitleLabel = Gtk::manage(new Gtk::Label);
-	newItemRowTitleLabel->set_text(value.header);
+	newItemRowTitleLabel->set_text(value.get_header());
 	newItemRowTitleLabel->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
 	newItemRowTitleLabel->set_name("NotesLabel");
 	newItemRowTitleLabel->set_halign(Gtk::Align::ALIGN_FILL);
 	newItemRowTitleLabel->set_has_tooltip();
-	newItemRowTitleLabel->set_tooltip_text(value.text);
+	newItemRowTitleLabel->set_tooltip_text(value.get_note());
 	
-	Gtk::CheckButton* newRowItemCheckButton = this->create_row_check(value.is_active);
+	Gtk::CheckButton* newRowItemCheckButton = this->create_row_check(value.is_active());
 	auto toggle_handle = [this, button=newRowItemCheckButton](){
 		this->signal_activate_button_click(button);};
 	newRowItemCheckButton->signal_pressed().connect(toggle_handle);
