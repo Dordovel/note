@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include <gtkmm-3.0/gtkmm/dialog.h>
+#include "gdkmm/rgba.h"
 #include "gtkmm/enums.h"
 #include "gtkmm/object.h"
 
@@ -26,6 +27,10 @@ Window::Window(BaseObjectType* cobject,
 	m_refGlade->get_widget("ScrollWindow", this->_scrolledWindow);
 	m_refGlade->get_widget("GridButton", this->_gridButton);
 	m_refGlade->get_widget("ListButton", this->_listButton);
+
+	if(this->statusBar)
+	{
+	}
 
 	this->change_view("list");
 
@@ -159,7 +164,6 @@ void Window::set_event_dispatcher(std::shared_ptr<ICoreDispatcher> dispather) no
 
 void Window::event(ComponentEventTypes type, std::size_t index) noexcept
 {
-			this->set_info_message(std::to_string(index));
 	switch(type)
 	{
 		case ComponentEventTypes::ACTIVATE:

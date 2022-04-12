@@ -1,23 +1,23 @@
 entry
 {
-    border: 1px solid black;
+    border: 1px solid Black;
     font-size: 14px;
 }
 
 entry:focus
 {
-    border: 1px solid blue;
+    border: 1px solid Blue;
     font-size: 16px;
 }
 
 text
 {
-    border: 1px solid black;
+    border: 1px solid White;
 	font-size: 14px;
 }
 
 text:focus
 {
-    border: 1px solid blue;
+    border: 1px solid Blue;
 	font-size: 14px;
 }

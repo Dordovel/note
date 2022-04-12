@@ -1,11 +1,11 @@
 window
 {
-	background-color: white;
+	background-color: White;
 }
 
 list, flowbox
 {
-	background-color: lightgray;
+	background-color: Lightgray;
 }
 
 row, flowboxchild
@@ -30,17 +30,16 @@ row:last-child
 
 row:nth-child(odd),flowboxchild:nth-child(odd) 
 {
-	background-color: lightblue;
+	background-color: Lightblue;
 }
 
 row:nth-child(even),flowboxchild:nth-child(even)
 {
-	background-color: white;
+	background-color: White;
 }
 
 row:focus,flowboxchild:focus 
 {
-	background-color: Black;
 	color: White;
 }
 
@@ -51,5 +50,10 @@ button
 
 .activeListRow
 {
-	background-color: orange;
+	background-color: Orange;
+}
+
+label
+{
+	color: Black;
 }
